@@ -1,4 +1,30 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
+spring:
+  application:
+    name: receiver
+
 server:
-  port: 8085
+  port: 8081
   error:
     include-message: always
+
+kafka:
+  bootstrap-servers: 127.0.0.1:9092
+  group-id: group_json
+  trusted-packages: "*"
+  command-topic: Kafka_Task_json
+  report-topic: Kafka_Task_Report_json

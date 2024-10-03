@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matura-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matura
+  template:
+    metadata:
+      labels:
+        app: matura
+    spec:
+      containers:
+        - name: matura
+          image: rafalnowak444/matura:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://db-postgresql-ams3-17133-do-user-17810680-0.g.db.ondigitalocean.com:25060/defaultdb"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: password
+            - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+              value: "org.postgresql.Driver"
+          volumeMounts:
+            - name: ssl-cert
+              mountPath: /etc/ssl/certs  # Montowanie certyfikatu w kontenerze
+              readOnly: true
+            - name: file-storage  # Nazwa woluminu, który dodajemy
+              mountPath: /tmp/files  # Ścieżka wewnątrz kontenera (zgodna z application.yml)
+      volumes:
+        - name: ssl-cert
+          secret:
+            secretName: db-ssl-cert  # Secret zawierający certyfikat
+        - name: file-storage  # Nazwa woluminu
+          persistentVolumeClaim:
+            claimName: matura-pvc  # Nazwa PersistentVolumeClaim, który wcześniej stworzyliśmy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: matura-service
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: matura

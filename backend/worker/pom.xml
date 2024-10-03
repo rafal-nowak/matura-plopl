@@ -15,10 +15,10 @@
 	<description>worker</description>
 
 	<properties>
-		<java.version>17</java.version>
+		<java.version>21</java.version>
 		<mapstruct.version>1.4.2.Final</mapstruct.version>
-		<docker.image.name>matura-worker</docker.image.name>
-		<docker.username>wygraniec</docker.username>
+		<docker.image.name>worker</docker.image.name>
+		<docker.username>rafalnowak444</docker.username>
 	</properties>
 
 	<dependencies>
@@ -71,6 +71,11 @@
 			<artifactId>snakeyaml</artifactId>
 			<version>2.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -90,10 +95,10 @@
 			<plugin>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>jib-maven-plugin</artifactId>
-				<version>3.3.1</version>
+				<version>3.4.3</version>
 				<configuration>
 					<from>
-						<image>eclipse-temurin:17</image>
+						<image>eclipse-temurin:21</image>
 						<platforms>
 							<platform>
 								<architecture>arm64</architecture>

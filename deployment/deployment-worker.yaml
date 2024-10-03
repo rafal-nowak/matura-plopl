@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-app
+  labels:
+    app: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+        - name: receiver
+          image: rafalnowak444/worker:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+          volumeMounts:
+            - name: file-storage  # Nazwa woluminu, który dodajemy
+              mountPath: /tmp/files  # Ścieżka wewnątrz kontenera (zgodna z application.yml)
+      volumes:
+        - name: file-storage  # Nazwa woluminu
+          persistentVolumeClaim:
+            claimName: matura-pvc  # Nazwa PersistentVolumeClaim, który wcześniej stworzyliśmy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: worker

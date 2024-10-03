@@ -1,0 +1,77 @@
+name: CD - Deploy Matura Backend
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - backend/matura/**
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: defaultdb
+        ports:
+          - 5332:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: ./backend/matura
+
+    steps:
+      # Sprawdzenie repozytorium
+      - uses: actions/checkout@v3
+
+      # Konfiguracja Javy
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      # Logowanie do Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
+      # Ustawienie numeru buildu
+      - name: Set build number
+        id: build-number
+        run: echo "BUILD_NUMBER=$(date '+%Y.%m.%d.%H.%M.%S')" >> $GITHUB_OUTPUT
+
+      # Budowanie obrazu Docker i jego wypchnięcie z unikalnym tagiem
+      - name: Build and Push Docker Image
+        run: mvn -ntp -B verify -Ddocker.image.tag=${{ steps.build-number.outputs.BUILD_NUMBER }} jib:build
+
+#      # Logowanie do DigitalOcean
+#      - name: Login to DigitalOcean
+#        uses: digitalocean/action-doctl@v2
+#        with:
+#          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+#
+#      # Logowanie do Kubernetes na DigitalOcean
+#      - name: Fetch Kubernetes Credentials
+#        run: doctl kubernetes cluster kubeconfig save ${{ vars.DIGITALOCEAN_K8S_CLUSTER }}
+#
+#      # Zmiana obrazu w pliku deployment-matura.yaml w folderze ./deployment
+#      - name: Update deployment-matura.yaml with new image tag
+#        run: |
+#          sed -i 's@image: rafalnowak444/matura:.*@image: rafalnowak444/matura:${{ steps.build-number.outputs.BUILD_NUMBER }}@' ../../deployment/deployment-matura.yaml
+#
+#      # Wykonanie kubectl apply dla deployment-matura.yaml (z folderu ./deployment)
+#      - name: Apply Kubernetes Deployment
+#        run: kubectl apply -f ../../deployment/deployment-matura.yaml

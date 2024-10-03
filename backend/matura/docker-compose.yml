@@ -1,34 +1,39 @@
 version: '3'
 services:
-  postgres:
-    image: postgres:15-alpine
-    ports:
-      - "5432:5432"
+  db:
+    container_name: postgres
+    image: postgres:16-alpine
     environment:
-      - POSTGRES_DB=training
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=defaultdb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
       - PGDATA=var/lib/postgresql/data
-    command: ["postgres", "-c", "log_statement=all"]
+    command: [ "postgres", "-c", "log_statement=all" ]
     volumes:
       - ./volumes/postgresql:/var/lib/postgresql/data
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
   postgres-it:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     ports:
       - "5332:5432"
     environment:
-      - POSTGRES_DB=training
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=defaultdb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
       - PGDATA=var/lib/postgresql/data
     command: [ "postgres", "-c", "log_statement=all" ]
-  pgadmin:
-    image: dpage/pgadmin4
-    ports:
-      - 8000:80
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@amigoscode.com
-      - PGADMIN_DEFAULT_PASSWORD=admin
+    networks:
+      - postgres
+    restart: unless-stopped
+    depends_on:
+      - db
 
   zookeeper:
     image: wurstmeister/zookeeper
@@ -51,4 +56,5 @@ volumes:
   data: {}
 
 networks:
-  default:
+  postgres:
+    driver: bridge

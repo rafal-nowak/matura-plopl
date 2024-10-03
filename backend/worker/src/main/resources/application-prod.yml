@@ -12,23 +12,10 @@ management:
       enabled: true
     readinessState:
       enabled: true
+
 spring:
-  #    profiles:
-  #        active: prod-test
   application:
-    name: counter
-  datasource:
-    url: jdbc:postgresql://localhost:5432/defaultdb
-    username: user
-    password: password
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-    show-sql: true
+    name: worker
 
 server:
   port: 8080
@@ -36,11 +23,8 @@ server:
     include-message: always
 
 kafka:
-  bootstrap-servers: 127.0.0.1:9092
+  bootstrap-servers: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
   group-id: group_json
   trusted-packages: "*"
   command-topic: Kafka_Task_json
   report-topic: Kafka_Task_Report_json
-
-volume:
-  path: ./tmp/files/
