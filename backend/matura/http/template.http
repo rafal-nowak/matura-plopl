@@ -1,0 +1,75 @@
+### login admin
+POST http://localhost:8080/api/v1/auth/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "username": "john@gmail.com",
+  "password": "password"
+}
+
+> {%
+    client.global.set("auth_token", "Bearer " + response.body.token);
+%}
+
+
+### create template
+POST http://localhost:8080/api/v1/templates
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+{
+  "sourceUrl": "https://github.com/HubertM6/MaturaBinaryNumbersPython",
+  "taskLanguage": "PYTHON",
+  "source": "Matura 05.2023",
+  "numberOfSubtasks": 3
+}
+
+### get template by id
+GET http://localhost:8080/api/v1/templates/1
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+### get all templates
+GET http://localhost:8080/api/v1/templates
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+### get all templates
+GET http://localhost:8080/api/v1/templates?page=0&size=3
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+### get all templates by task language
+GET http://localhost:8080/api/v1/templates?page=0&size=3&taskLanguage=PYTHON
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+### get all templates by source
+GET http://localhost:8080/api/v1/templates?page=0&size=10&source=Matura%25
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+### get all templates by task language and source
+GET http://localhost:8080/api/v1/templates?page=0&size=10&taskLanguage=PYTHON&source=Matura%25
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+### delete template
+DELETE http://localhost:8080/api/v1/templates/1
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+### get available task languages
+GET http://localhost:8080/api/v1/templates/languages
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}

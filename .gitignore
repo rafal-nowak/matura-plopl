@@ -1,0 +1,44 @@
+**/target/
+**/.idea/
+**/.mvn/
+**/mvnw
+**/mvnw.cmd
+
+# IDEs and editors
+.idea/
+*.iml
+modules.xml
+.idea/misc.xml
+*.ipr
+
+#REACT
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+/backend/matura/volumes/
+/backend/matura/UserWorkspaces/
+/frontend/matura/.env
+
+/UserWorkspaces/**
+/volumes
