@@ -28,3 +28,6 @@ kafka:
   trusted-packages: "*"
   command-topic: Kafka_Task_json
   report-topic: Kafka_Task_Report_json
+
+volume:
+  path: /tmp/files/

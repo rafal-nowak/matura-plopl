@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(path = "/api/v1/tasks")

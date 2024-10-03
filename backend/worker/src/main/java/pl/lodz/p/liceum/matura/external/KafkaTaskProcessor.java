@@ -7,6 +7,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import pl.lodz.p.liceum.matura.config.KafkaConfiguration;
+import pl.lodz.p.liceum.matura.config.KafkaProperties;
 import pl.lodz.p.liceum.matura.domain.*;
 import pl.lodz.p.liceum.matura.external.worker.task.events.*;
 
@@ -15,12 +16,13 @@ import pl.lodz.p.liceum.matura.external.worker.task.events.*;
 @RequiredArgsConstructor
 public class KafkaTaskProcessor {
 
+    private final KafkaProperties kafkaProperties;
     private final KafkaTemplate<String, TaskEvent> kafkaTemplate;
     private final TaskExecutor taskExecutor;
     private final TaskEventMapper taskEventMapper;
 
 
-    @KafkaListener(topics = KafkaConfiguration.TASKS_INBOUND_TOPIC, groupId = KafkaConfiguration.KAFKA_GROUP_ID, containerFactory = "taskKafkaListenerFactory")
+    @KafkaListener(topics = "#{kafkaProperties.commandTopic}", groupId = "#{kafkaProperties.groupId}", containerFactory = "taskKafkaListenerFactory")
     public void onReceive(TaskEvent taskEvent) {
         if (taskEvent instanceof TaskSentForProcessingEvent taskSentForProcessingEvent) {
             log.info("Received TaskSentForProcessingEvent: " + taskEvent);
@@ -33,20 +35,20 @@ public class KafkaTaskProcessor {
 
                 if (result.getExecutionStatus() == ExecutionStatus.FAILED) {
                     kafkaTemplate.send(
-                            KafkaConfiguration.TASKS_OUTBOUND_TOPIC,
+                            kafkaProperties.getReportTopic(),
                             new SubtaskProcessingFailedEvent(taskEvent.getTaskId(), taskSentForProcessingEvent.getSubmissionId(), subtask.getWorkspaceUrl(), subtask.getNumber())
                     );
                     return;
                 }
 
                 kafkaTemplate.send(
-                        KafkaConfiguration.TASKS_OUTBOUND_TOPIC,
+                        kafkaProperties.getReportTopic(),
                         new SubtaskFullProcessingCompleteEvent(taskEvent.getTaskId(), taskSentForProcessingEvent.getSubmissionId(), subtask.getWorkspaceUrl(), subtask.getNumber(), result.getScore(), result.getDescription())
                 );
             }
 
             kafkaTemplate.send(
-                    KafkaConfiguration.TASKS_OUTBOUND_TOPIC,
+                    kafkaProperties.getReportTopic(),
                     new TaskProcessingCompleteEvent(task.getTaskId(), taskSentForProcessingEvent.getSubmissionId(), task.getWorkspaceUrl())
             );
 
@@ -57,14 +59,14 @@ public class KafkaTaskProcessor {
 
             if (result.getExecutionStatus() == ExecutionStatus.FAILED) {
                 kafkaTemplate.send(
-                        KafkaConfiguration.TASKS_OUTBOUND_TOPIC,
+                        kafkaProperties.getReportTopic(),
                         new SubtaskProcessingFailedEvent(taskEvent.getTaskId(), subtaskSentForFastProcessingEvent.getSubmissionId(), subtask.getWorkspaceUrl(), subtask.getNumber())
                 );
                 return;
             }
 
             kafkaTemplate.send(
-                    KafkaConfiguration.TASKS_OUTBOUND_TOPIC,
+                    kafkaProperties.getReportTopic(),
                     new SubtaskFastProcessingCompleteEvent(taskEvent.getTaskId(), subtaskSentForFastProcessingEvent.getSubmissionId(), subtask.getWorkspaceUrl(), subtask.getNumber(), result.getScore(), result.getDescription())
             );
 
@@ -75,14 +77,14 @@ public class KafkaTaskProcessor {
 
             if (result.getExecutionStatus() == ExecutionStatus.FAILED) {
                 kafkaTemplate.send(
-                        KafkaConfiguration.TASKS_OUTBOUND_TOPIC,
+                        kafkaProperties.getReportTopic(),
                         new SubtaskProcessingFailedEvent(taskEvent.getTaskId(), subtaskSentForFullProcessingEvent.getSubmissionId(), subtask.getWorkspaceUrl(), subtask.getNumber())
                 );
                 return;
             }
 
             kafkaTemplate.send(
-                    KafkaConfiguration.TASKS_OUTBOUND_TOPIC,
+                    kafkaProperties.getReportTopic(),
                     new SubtaskFullProcessingCompleteEvent(taskEvent.getTaskId(), subtaskSentForFullProcessingEvent.getSubmissionId(), subtask.getWorkspaceUrl(), subtask.getNumber(), result.getScore(), result.getDescription())
             );
 

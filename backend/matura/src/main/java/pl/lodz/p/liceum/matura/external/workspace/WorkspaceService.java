@@ -8,6 +8,7 @@ import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.springframework.beans.factory.annotation.Value;
 import pl.lodz.p.liceum.matura.domain.workspace.FileWasNotFoundException;
 import pl.lodz.p.liceum.matura.domain.workspace.RepositoryAlreadyResidesInDestinationFolderException;
 import pl.lodz.p.liceum.matura.domain.workspace.RepositoryWasNotFoundException;
@@ -25,7 +26,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class WorkspaceService implements Workspace {
 
-    private final String baseWorkspace;
+    @Value("${volume.path}")
+    private String baseWorkspace;
 
     @Override
     public String createWorkspace(String sourceRepositoryUrl) {

@@ -19,22 +19,22 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    private final List<String> allowedOrigins;
-    private final List<String> allowedMethods;
-    private final List<String> allowedHeaders;
-    private final List<String> exposedHeaders;
+//    private final List<String> allowedOrigins;
+//    private final List<String> allowedMethods;
+//    private final List<String> allowedHeaders;
+//    private final List<String> exposedHeaders;
 
-    public SecurityConfig(
-            @Value("#{'${cors.allowed-origins}'.split(',')}") List<String> allowedOrigins,
-            @Value("#{'${cors.allowed-methods}'.split(',')}") List<String> allowedMethods,
-            @Value("#{'${cors.allowed-headers}'.split(',')}") List<String> allowedHeaders,
-            @Value("#{'${cors.exposed-headers}'.split(',')}") List<String> exposedHeaders
-    ) {
-        this.allowedOrigins = allowedOrigins;
-        this.allowedMethods = allowedMethods;
-        this.allowedHeaders = allowedHeaders;
-        this.exposedHeaders = exposedHeaders;
-    }
+//    public SecurityConfig(
+//            @Value("#{'${cors.allowed-origins}'.split(',')}") List<String> allowedOrigins,
+//            @Value("#{'${cors.allowed-methods}'.split(',')}") List<String> allowedMethods,
+//            @Value("#{'${cors.allowed-headers}'.split(',')}") List<String> allowedHeaders,
+//            @Value("#{'${cors.exposed-headers}'.split(',')}") List<String> exposedHeaders
+//    ) {
+//        this.allowedOrigins = allowedOrigins;
+//        this.allowedMethods = allowedMethods;
+//        this.allowedHeaders = allowedHeaders;
+//        this.exposedHeaders = exposedHeaders;
+//    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -67,10 +67,10 @@ public class SecurityConfig {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 
         corsConfiguration.applyPermitDefaultValues();
-        corsConfiguration.setAllowedOrigins(allowedOrigins);
-        corsConfiguration.setAllowedMethods(allowedMethods);
-        corsConfiguration.setAllowedHeaders(allowedHeaders);
-        corsConfiguration.setExposedHeaders(exposedHeaders);
+//        corsConfiguration.setAllowedOrigins(allowedOrigins);
+//        corsConfiguration.setAllowedMethods(allowedMethods);
+//        corsConfiguration.setAllowedHeaders(allowedHeaders);
+//        corsConfiguration.setExposedHeaders(exposedHeaders);
         corsConfiguration.addAllowedOrigin("http://127.0.0.1:3000/");
 
         source.registerCorsConfiguration("/**", corsConfiguration);

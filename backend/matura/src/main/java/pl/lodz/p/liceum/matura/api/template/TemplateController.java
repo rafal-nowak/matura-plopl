@@ -9,6 +9,7 @@ import pl.lodz.p.liceum.matura.appservices.TemplateApplicationService;
 import pl.lodz.p.liceum.matura.domain.template.TaskLanguage;
 import pl.lodz.p.liceum.matura.domain.template.Template;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(path = "api/v1/templates")

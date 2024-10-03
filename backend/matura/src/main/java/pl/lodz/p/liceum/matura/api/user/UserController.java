@@ -19,7 +19,7 @@ import pl.lodz.p.liceum.matura.security.Security;
 import java.util.List;
 import java.util.Optional;
 
-
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(path = "/api/v1/users")

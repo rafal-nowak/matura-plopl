@@ -5,6 +5,7 @@ import lombok.extern.java.Log;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import pl.lodz.p.liceum.matura.config.KafkaConfiguration;
+import pl.lodz.p.liceum.matura.config.KafkaProperties;
 import pl.lodz.p.liceum.matura.domain.result.Result;
 import pl.lodz.p.liceum.matura.domain.result.ResultService;
 import pl.lodz.p.liceum.matura.domain.subtask.Subtask;
@@ -32,7 +33,9 @@ public class KafkaConsumer {
     private final TaskService taskService;
     private final Clock clock;
 
-    @KafkaListener(topics = KafkaConfiguration.TASKS_INBOUND_TOPIC, groupId = KafkaConfiguration.KAFKA_GROUP_ID,
+    private final KafkaProperties kafkaProperties;
+
+    @KafkaListener(topics = "#{kafkaProperties.reportTopic}", groupId = "#{kafkaProperties.groupId}",
             containerFactory = "taskKafkaListenerFactory")
     public void onReceive(TaskEvent taskEvent) {
 

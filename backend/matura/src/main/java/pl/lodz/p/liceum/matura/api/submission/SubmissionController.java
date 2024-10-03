@@ -12,6 +12,7 @@ import pl.lodz.p.liceum.matura.domain.submission.SubmissionService;
 
 import java.util.List;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(path = "/api/v1/submissions")

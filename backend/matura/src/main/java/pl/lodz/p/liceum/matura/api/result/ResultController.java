@@ -2,13 +2,11 @@ package pl.lodz.p.liceum.matura.api.result;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.lodz.p.liceum.matura.domain.result.Result;
 import pl.lodz.p.liceum.matura.domain.result.ResultService;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(path = "/api/v1/results")

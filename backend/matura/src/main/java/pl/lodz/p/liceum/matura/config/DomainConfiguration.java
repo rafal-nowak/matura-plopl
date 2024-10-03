@@ -83,7 +83,7 @@ public class DomainConfiguration {
 
     @Bean
     public Workspace workspace() {
-        return new WorkspaceService("UserWorkspaces");
+        return new WorkspaceService();
     }
 
     @Bean
