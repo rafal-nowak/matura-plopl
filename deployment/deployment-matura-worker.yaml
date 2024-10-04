@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: receiver
-          image: rafalnowak444/worker:latest
+          image: rafalnowak444/matura-worker:latest
           ports:
             - containerPort: 8080
           readinessProbe:

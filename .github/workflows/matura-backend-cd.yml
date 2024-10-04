@@ -38,7 +38,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
           cache: 'maven'
 
       # Logowanie do Docker Hub
@@ -67,11 +67,11 @@ jobs:
 #      - name: Fetch Kubernetes Credentials
 #        run: doctl kubernetes cluster kubeconfig save ${{ vars.DIGITALOCEAN_K8S_CLUSTER }}
 #
-#      # Zmiana obrazu w pliku deployment-matura.yaml w folderze ./deployment
-#      - name: Update deployment-matura.yaml with new image tag
+#      # Zmiana obrazu w pliku deployment-matura-api.yaml w folderze ./deployment
+#      - name: Update deployment-matura-api.yaml with new image tag
 #        run: |
-#          sed -i 's@image: rafalnowak444/matura:.*@image: rafalnowak444/matura:${{ steps.build-number.outputs.BUILD_NUMBER }}@' ../../deployment/deployment-matura.yaml
+#          sed -i 's@image: rafalnowak444/matura-api:.*@image: rafalnowak444/matura-api:${{ steps.build-number.outputs.BUILD_NUMBER }}@' ../../deployment/deployment-matura-api.yaml
 #
-#      # Wykonanie kubectl apply dla deployment-matura.yaml (z folderu ./deployment)
+#      # Wykonanie kubectl apply dla deployment-matura-api.yaml (z folderu ./deployment)
 #      - name: Apply Kubernetes Deployment
-#        run: kubectl apply -f ../../deployment/deployment-matura.yaml
+#        run: kubectl apply -f ../../deployment/deployment-matura-api.yaml
