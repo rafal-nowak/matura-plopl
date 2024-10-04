@@ -56,8 +56,9 @@ kubectl apply -f secret.yaml
 kubectl apply -f ssl-secret.yaml
 
 Krok 4: Utworzenie Deploymentów dla Aplikacji
-kubectl apply -f deployment-counter.yaml
-kubectl apply -f deployment-receiver.yaml
+kubectl apply -f matura-pvc.yaml
+kubectl apply -f deployment-matura-api.yaml
+kubectl apply -f deployment-matura-worker.yaml
 
 Krok 5: Konfiguracja Ingress
 kubectl apply -f ingress.yaml
