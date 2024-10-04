@@ -1,6 +1,7 @@
 name: CI - Build Matura Backend
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - main
