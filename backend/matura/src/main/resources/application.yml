@@ -16,7 +16,7 @@ spring:
   #    profiles:
   #        active: prod-test
   application:
-    name: counter
+    name: matura-api
   datasource:
     url: jdbc:postgresql://localhost:5432/defaultdb
     username: user
