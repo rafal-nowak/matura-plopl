@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: counter
+    name: matura-api
   datasource:
     url: jdbc:postgresql://localhost:5332/defaultdb
     username: user
