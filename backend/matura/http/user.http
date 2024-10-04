@@ -47,7 +47,7 @@ Authorization: {{auth_token}}
 
 {
   "email": "rafal@gmail.com",
-  "name": "Rafal Nowak",
+  "username": "Rafal Nowak",
   "password": "userPass",
   "role": "ADMIN"
 }
