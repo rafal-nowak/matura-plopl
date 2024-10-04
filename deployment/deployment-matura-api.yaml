@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: matura
-          image: rafalnowak444/matura:latest
+          image: rafalnowak444/matura-api:latest
           ports:
             - containerPort: 8080
           readinessProbe:

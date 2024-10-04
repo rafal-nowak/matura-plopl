@@ -1,0 +1,5 @@
+### get liveness
+GET http://localhost:8081/actuator/health/liveness
+
+### get readiness
+GET http://localhost:8081/actuator/health/readiness
