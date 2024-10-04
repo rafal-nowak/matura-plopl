@@ -1,0 +1,83 @@
+### login admin
+POST https://matura-api.it4u.app/api/v1/auth/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "username": "john@gmail.com",
+  "password": "password"
+}
+
+> {%
+    client.global.set("auth_token", "Bearer " + response.body.token);
+%}
+
+### login user
+POST https://matura-api.it4u.app/api/v1/auth/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "username": "mary@gmail.com",
+  "password": "password"
+}
+
+> {%
+    client.global.set("auth_token", "Bearer " + response.body.token);
+%}
+
+### create task
+POST https://matura-api.it4u.app/api/v1/tasks
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+{
+  "templateId": 1,
+  "numberOfSubtasks": 3,
+  "userId": 2
+}
+
+### get all tasks
+GET https://matura-api.it4u.app/api/v1/tasks
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+### get all user's tasks by state
+GET https://matura-api.it4u.app/api/v1/users/2/tasks/byState?page=0&size=3&taskStates=CREATED&taskStates=PROCESSING
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+### get task by id
+GET https://matura-api.it4u.app/api/v1/tasks/1
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+### get task definition
+GET https://matura-api.it4u.app/api/v1/tasks/1/definition
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+### execute subtask
+POST https://matura-api.it4u.app/api/v1/tasks/1/subtasks/3/fastprocess
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+{
+
+}
+
+### execute task
+POST https://matura-api.it4u.app/api/v1/tasks/1/process
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+{
+
+}

@@ -1,0 +1,25 @@
+### login admin
+POST https://matura-api.it4u.app/api/v1/auth/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "username": "john@gmail.com",
+  "password": "password"
+}
+
+> {%
+    client.global.set("auth_token", "Bearer " + response.body.token);
+%}
+
+### get submission by id
+GET https://matura-api.it4u.app/api/v1/submissions/1
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+### get submission results by submission id
+GET https://matura-api.it4u.app/api/v1/submissions/1/results
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}

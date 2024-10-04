@@ -43,21 +43,21 @@ jobs:
       - name: Build and Push Docker Image
         run: mvn -ntp -B verify -Ddocker.image.tag=${{ steps.build-number.outputs.BUILD_NUMBER }} jib:build
 
-#      # Logowanie do DigitalOcean
-#      - name: Login to DigitalOcean
-#        uses: digitalocean/action-doctl@v2
-#        with:
-#          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-#
-#      # Logowanie do Kubernetes na DigitalOcean
-#      - name: Fetch Kubernetes Credentials
-#        run: doctl kubernetes cluster kubeconfig save ${{ vars.DIGITALOCEAN_K8S_CLUSTER }}
-#
-#      # Zmiana obrazu w pliku deployment-matura-worker.yaml w folderze ./deployment
-#      - name: Update deployment-matura-worker.yaml with new image tag
-#        run: |
-#          sed -i 's@image: rafalnowak444/matura-worker:.*@image: rafalnowak444/matura-worker:${{ steps.build-number.outputs.BUILD_NUMBER }}@' ../../deployment/deployment-matura-worker.yaml
-#
-#      # Wykonanie kubectl apply dla deployment-matura-worker.yaml (z folderu ./deployment)
-#      - name: Apply Kubernetes Deployment
-#        run: kubectl apply -f ../../deployment/deployment-matura-worker.yaml
+      # Logowanie do DigitalOcean
+      - name: Login to DigitalOcean
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      # Logowanie do Kubernetes na DigitalOcean
+      - name: Fetch Kubernetes Credentials
+        run: doctl kubernetes cluster kubeconfig save ${{ vars.DIGITALOCEAN_K8S_CLUSTER }}
+
+      # Zmiana obrazu w pliku deployment-matura-worker.yaml w folderze ./deployment
+      - name: Update deployment-matura-worker.yaml with new image tag
+        run: |
+          sed -i 's@image: rafalnowak444/matura-worker:.*@image: rafalnowak444/matura-worker:${{ steps.build-number.outputs.BUILD_NUMBER }}@' ../../deployment/deployment-matura-worker.yaml
+
+      # Wykonanie kubectl apply dla deployment-matura-worker.yaml (z folderu ./deployment)
+      - name: Apply Kubernetes Deployment
+        run: kubectl apply -f ../../deployment/deployment-matura-worker.yaml
