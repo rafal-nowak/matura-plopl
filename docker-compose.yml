@@ -77,6 +77,7 @@ services:
     image: rafalnowak444/matura-react
     environment:
       VITE_API_URL: http://matura-api:8080/api
+      VITE_HOST: 0.0.0.0
     ports:
       - "5173:5173"
     networks:
