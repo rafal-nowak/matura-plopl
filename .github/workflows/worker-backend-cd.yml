@@ -7,6 +7,7 @@ on:
       - main
     paths:
       - backend/worker/**
+      - .github/workflows/worker-backend-cd.yml
 
 jobs:
   deploy:
@@ -18,14 +19,8 @@ jobs:
 
     steps:
       # Sprawdzenie repozytorium
-      - uses: actions/checkout@v3
-
-      # Konfiguracja Javy
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'maven'
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       # Logowanie do Docker Hub
       - name: Login to Docker Hub
@@ -40,8 +35,29 @@ jobs:
         run: echo "BUILD_NUMBER=$(date '+%Y.%m.%d.%H.%M.%S')" >> $GITHUB_OUTPUT
 
       # Budowanie obrazu Docker i jego wypchnięcie z unikalnym tagiem
-      - name: Build and Push Docker Image
-        run: mvn -ntp -B verify -Ddocker.image.tag=${{ steps.build-number.outputs.BUILD_NUMBER }} jib:build
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build and push Docker image
+        run: |
+          docker buildx create --use
+          docker buildx build \
+            --platform=linux/amd64,linux/arm64 \
+            -t "${{ vars.DOCKERHUB_USERNAME }}/matura-worker:${{ steps.build-number.outputs.BUILD_NUMBER }}" \
+            -t "${{ vars.DOCKERHUB_USERNAME }}/matura-worker:latest" \
+            --push \
+            .
+
+      - name: Logout from Docker Hub
+        run: docker logout
 
       # Logowanie do DigitalOcean
       - name: Login to DigitalOcean
