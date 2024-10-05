@@ -13,7 +13,7 @@ import java.io.InputStreamReader;
 
 @Log
 @Component
-@Profile("prod") // Wykonuje się tylko w profilu produkcyjnym
+@Profile({"dev", "prod"}) // Wykonuje się zarówno w profilach 'dev' jak i 'prod'
 @RequiredArgsConstructor
 public class CommandInitializer implements CommandLineRunner {
 
