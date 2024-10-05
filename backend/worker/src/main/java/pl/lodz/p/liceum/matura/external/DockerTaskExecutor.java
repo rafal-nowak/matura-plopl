@@ -112,10 +112,12 @@ public class DockerTaskExecutor implements TaskExecutor {
     }
 
     private String[] prepareCommand(String workspaceUrl) {
+        String dockerHost = "export DOCKER_HOST='tcp://localhost:2375'; ";
         boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
         if (isWindows)
             return new String[]{"powershell.exe", "/c", "docker-compose --file \"" + workspaceUrl + "\\docker-compose.yml\" up"};
         else
-            return new String[]{"bash", "-c", "cd " + workspaceUrl + "; docker-compose up"};
+//            return new String[]{"sh", "-c", "cd " + workspaceUrl + "; docker-compose up"};
+            return new String[]{"sh", "-c", dockerHost + "cd " + workspaceUrl + " && docker-compose up"};
     }
 }

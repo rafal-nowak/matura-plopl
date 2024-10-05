@@ -21,10 +21,8 @@ public class CommandInitializer implements CommandLineRunner {
     public void run(String... args) {
         log.info("Starting Command Initializer...");
 
-        executeStartupCommand("apt-get update");
-        executeStartupCommand("apt install docker.io -y");
-        executeStartupCommand("apt install docker-compose -y");
-        executeStartupCommand("apt install python3-setuptools -y");
+//        log.info(executeStartupCommand("dockerd &"));
+        log.info(executeStartupCommand("dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock &"));
 
         log.info("Docker Version: " + executeStartupCommand("docker --version"));
         log.info("Docker Compose Version: " + executeStartupCommand("docker-compose --version"));
@@ -37,31 +35,24 @@ public class CommandInitializer implements CommandLineRunner {
 
     private String executeCommand(@RequestParam String command) {
         StringBuilder result = new StringBuilder();
-
         try {
-            // Uruchomienie komendy w systemie operacyjnym
-            Process process = Runtime.getRuntime().exec(command);
+            log.info("Executing command using ProcessBuilder: " + command);
+            // Użycie ProcessBuilder zamiast exec
+            ProcessBuilder builder = new ProcessBuilder("sh", "-c", command);
+            builder.redirectErrorStream(true);  // Przekierowanie strumienia błędów do standardowego wyjścia
+            Process process = builder.start();
 
-            // Pobranie wyniku z wejścia standardowego
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
                 result.append(line).append("\n");
             }
 
-            // Pobranie wyniku z wyjścia standardowego błędów (jeśli istnieje)
-            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            while ((line = errorReader.readLine()) != null) {
-                result.append("ERROR: ").append(line).append("\n");
-            }
-
-            // Zakończenie procesu
             process.waitFor();
-
         } catch (IOException | InterruptedException e) {
             return "Command execution failed: " + e.getMessage();
         }
-
         return result.toString();
     }
+
 }
