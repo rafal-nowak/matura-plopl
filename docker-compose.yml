@@ -1,0 +1,94 @@
+version: '3'
+services:
+  db:
+    container_name: postgres
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=defaultdb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/var/lib/postgresql/data
+    command: [ "postgres", "-c", "log_statement=all" ]
+    volumes:
+      - ./volumes/postgresql:/var/lib/postgresql/data
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    networks:
+      - matura-network
+    restart: unless-stopped
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: matura-zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - matura-network
+    restart: unless-stopped
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: matura-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_CREATE_TOPICS: "Kafka_Task_json:3:1,Kafka_Task_Report_json:3:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    networks:
+      - matura-network
+    restart: unless-stopped
+
+  matura-api:
+    container_name: matura-api
+    image: rafalnowak444/matura-api
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/defaultdb
+    volumes:
+      - ./tmp/files:/tmp/files
+    ports:
+      - "8080:8080"
+    networks:
+      - matura-network
+    depends_on:
+      - db
+      - kafka
+    restart: unless-stopped
+
+  matura-worker:
+    container_name: matura-worker
+    image: rafalnowak444/matura-worker
+    volumes:
+      - ./tmp/files:/tmp/files
+    ports:
+      - "8081:8081"
+    networks:
+      - matura-network
+    depends_on:
+      - kafka
+    restart: unless-stopped
+
+  matura-react:
+    container_name: matura-react
+    image: rafalnowak444/matura-react
+    environment:
+      VITE_API_URL: http://matura-api:8080/api
+    ports:
+      - "5173:5173"
+    networks:
+      - matura-network
+    depends_on:
+      - matura-api
+    restart: unless-stopped
+
+volumes:
+  postgresql:
+    driver: local
+
+networks:
+  matura-network:
+    driver: bridge
