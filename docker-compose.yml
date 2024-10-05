@@ -48,6 +48,7 @@ services:
     image: rafalnowak444/matura-api
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/defaultdb
+      SPRING_PROFILES_ACTIVE: dev
     volumes:
       - ./tmp/files:/tmp/files
     ports:
@@ -62,6 +63,8 @@ services:
   matura-worker:
     container_name: matura-worker
     image: rafalnowak444/matura-worker
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
     volumes:
       - ./tmp/files:/tmp/files
     ports:
