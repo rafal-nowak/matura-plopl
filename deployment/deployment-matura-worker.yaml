@@ -37,6 +37,8 @@ spec:
           volumeMounts:
             - name: file-storage  # Nazwa woluminu, który dodajemy
               mountPath: /tmp/files  # Ścieżka wewnątrz kontenera (zgodna z application.yml)
+          securityContext:
+            privileged: true  # Dodaj to pole, aby uruchomić kontener w trybie uprzywilejowanym
       volumes:
         - name: file-storage  # Nazwa woluminu
           persistentVolumeClaim:

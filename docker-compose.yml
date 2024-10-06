@@ -101,17 +101,6 @@ services:
 #    networks:
 #      - matura-network
 #    restart: unless-stopped
-#
-#  custom-temurin-docker:
-#    container_name: custom-temurin-docker
-#    image: rafalnowak444/custom-temurin-docker:latest
-#    privileged: true  # Dodaj tę linię
-#    command: tail -f /dev/null
-#    volumes:
-#      - ./tmp/files:/tmp/files
-#    networks:
-#      - matura-network
-#    restart: unless-stopped
 
 volumes:
   postgresql:
