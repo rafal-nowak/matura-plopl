@@ -9,6 +9,12 @@ RUN apk update && \
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 ENV PATH="$JAVA_HOME/bin:${PATH}"
 
+# Dodanie skryptu entrypoint.sh do kontenera
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# Nadanie uprawnień do uruchomienia skryptu
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Ustawienie katalogu roboczego
 WORKDIR /app
 
@@ -26,6 +32,9 @@ RUN mvn clean package -DskipTests
 
 # Ustawienie katalogu roboczego na /app/target, gdzie Maven umieszcza plik JAR
 WORKDIR /app/target
+
+# Ustawienie domyślnego punktu wejścia
+ENTRYPOINT ["sh", "/usr/local/bin/entrypoint.sh"]
 
 # Domyślna komenda uruchamiająca aplikację Spring Boot z bezpośrednim odniesieniem do pliku JAR
 CMD ["java", "-jar", "worker-0.0.1-SNAPSHOT.jar"]

@@ -22,7 +22,7 @@ public class CommandInitializer implements CommandLineRunner {
         log.info("Starting Command Initializer...");
 
 //        log.info(executeStartupCommand("dockerd &"));
-        log.info(executeStartupCommand("dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock &"));
+//        log.info(executeStartupCommand("dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock &"));
 
         log.info("Docker Version: " + executeStartupCommand("docker --version"));
         log.info("Docker Compose Version: " + executeStartupCommand("docker-compose --version"));
