@@ -117,7 +117,7 @@ public class DockerTaskExecutor implements TaskExecutor {
         if (isWindows)
             return new String[]{"powershell.exe", "/c", "docker-compose --file \"" + workspaceUrl + "\\docker-compose.yml\" up"};
         else
-//            return new String[]{"sh", "-c", "cd " + workspaceUrl + "; docker-compose up"};
-            return new String[]{"sh", "-c", dockerHost + "cd " + workspaceUrl + " && docker-compose up"};
+            return new String[]{"sh", "-c", "cd " + workspaceUrl + "; docker-compose up"};
+//            return new String[]{"sh", "-c", dockerHost + "cd " + workspaceUrl + " && docker-compose up"};
     }
 }
