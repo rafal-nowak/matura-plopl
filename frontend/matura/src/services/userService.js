@@ -76,4 +76,5 @@ export const login = async (username, password) => {
 
 export const logout = () => {
     localStorage.removeItem('user');
+    window.location = '/login';
 }
