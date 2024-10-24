@@ -56,16 +56,16 @@ public class DockerTaskExecutor implements TaskExecutor {
             }
         }
     }
+
     private Result getSubtaskResult(Subtask subtask) {
         Result result = new Result();
         try {
             var description = Files.readString(Path.of(subtask.getWorkspaceUrl() + "/test_results/task_" + subtask.getNumber() + "/test_details.txt"));
             var summary = Files.readAllLines(Path.of(subtask.getWorkspaceUrl() + "/test_results/task_" + subtask.getNumber() + "/test_summary.txt"));
             result.setDescription(description);
-            int score = Integer.parseInt(summary.get(1).split(" ")[2]) * 100 / Integer.parseInt(summary.get(1).split(" ")[4]);
+            int score = Integer.parseInt(summary.get(1).split(" ")[4]) == 0 ? 0 : Integer.parseInt(summary.get(1).split(" ")[2]) * 100 / Integer.parseInt(summary.get(1).split(" ")[4]);
             result.setScore(score);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new ResultFileNotFoundException();
         }
         return result;

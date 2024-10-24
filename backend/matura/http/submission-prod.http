@@ -13,7 +13,7 @@ Content-Type: application/json
 %}
 
 ### get submission by id
-GET https://matura-api.it4u.app/api/v1/submissions/1
+GET https://matura-api.it4u.app/api/v1/submissions/13
 Accept: application/json
 Content-Type: application/json
 Authorization: {{auth_token}}

@@ -53,7 +53,7 @@ Authorization: {{auth_token}}
 }
 
 ### delete user
-DELETE https://matura-api.it4u.app/api/v1/users/3
+DELETE https://matura-api.it4u.app/api/v1/users/88
 Accept: application/json
 Content-Type: application/json
 Authorization: {{auth_token}}
@@ -71,7 +71,7 @@ Content-Type: application/json
 Authorization: {{auth_token}}
 
 ### get all users
-GET https://matura-api.it4u.app/api/v1/users?page=2&size=3
+GET https://matura-api.it4u.app/api/v1/users?page=0&size=80
 Accept: application/json
 Content-Type: application/json
 Authorization: {{auth_token}}
