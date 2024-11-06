@@ -137,7 +137,7 @@ public class TaskApplicationService {
         Task task = taskService.findById(taskId);
         update(task);
         Submission submission = submissionService.save(
-                new Submission(null, task.getId(), verificationType, null, null)
+                new Submission(null, task.getId(), verificationType, "Work in progress\n", null, null)
         );
         taskExecutor.executeSubtask(new Subtask(submission.getId(), task.getId(), subtaskId, verificationType));
         return submission;
@@ -148,7 +148,7 @@ public class TaskApplicationService {
         task.setState(TaskState.PROCESSING);
         update(task);
         Submission submission = submissionService.save(
-                new Submission(null, task.getId(), VerificationType.FULL, null, null)
+                new Submission(null, task.getId(), VerificationType.FULL, "Work in progress\n", null, null)
         );
         taskExecutor.executeTask(task, submission);
         return submission;

@@ -14,6 +14,7 @@ public class Submission {
     private Integer id;
     private Integer taskId;
     private VerificationType verification;
+    private String sourceCode;
     private Integer submittedBy;
     private ZonedDateTime submittedAt;
 }
