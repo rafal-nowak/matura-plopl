@@ -33,7 +33,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://db-postgresql-ams3-17133-do-user-17810680-0.g.db.ondigitalocean.com:25060/defaultdb"
+              value: "jdbc:postgresql://postgres.spark-apps.svc.cluster.local:5432/defaultdb"
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -47,15 +47,9 @@ spec:
             - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
               value: "org.postgresql.Driver"
           volumeMounts:
-            - name: ssl-cert
-              mountPath: /etc/ssl/certs  # Montowanie certyfikatu w kontenerze
-              readOnly: true
             - name: file-storage  # Nazwa woluminu, który dodajemy
               mountPath: /tmp/files  # Ścieżka wewnątrz kontenera (zgodna z application.yml)
       volumes:
-        - name: ssl-cert
-          secret:
-            secretName: db-ssl-cert  # Secret zawierający certyfikat
         - name: file-storage  # Nazwa woluminu
           persistentVolumeClaim:
             claimName: matura-pvc  # Nazwa PersistentVolumeClaim, który wcześniej stworzyliśmy
