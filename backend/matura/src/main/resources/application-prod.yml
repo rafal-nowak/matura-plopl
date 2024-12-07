@@ -16,7 +16,7 @@ spring:
     application:
         name: matura-api
     datasource:
-        url: jdbc:postgresql://db-postgresql-ams3-17133-do-user-17810680-0.g.db.ondigitalocean.com:25060/defaultdb?sslmode=require&sslrootcert=/etc/ssl/certs/ca.crt
+        url: jdbc:postgresql://postgres.default.svc.cluster.local:5432/defaultdb
         username: ${SPRING_DATASOURCE_USERNAME}
         password: ${SPRING_DATASOURCE_PASSWORD}
         driver-class-name: org.postgresql.Driver

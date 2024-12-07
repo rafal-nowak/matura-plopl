@@ -4,8 +4,10 @@ metadata:
   name: matura-pvc
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
-      storage: 10Gi  # Określ wymaganą przestrzeń dyskową (można dostosować)
-  storageClassName: do-block-storage
+      storage: 10Gi
+  selector:
+    matchLabels:
+      type: shared-storage
