@@ -41,21 +41,21 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
-#      # Logowanie do Docker Hub
-#      - name: Login to Docker Hub
-#        uses: docker/login-action@v2
-#        with:
-#          username: ${{ vars.DOCKERHUB_USERNAME }}
-#          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
-#
-#      # Ustawienie numeru buildu
-#      - name: Set build number
-#        id: build-number
-#        run: echo "BUILD_NUMBER=$(date '+%Y.%m.%d.%H.%M.%S')" >> $GITHUB_OUTPUT
-#
-#      # Budowanie obrazu Docker i jego wypchnięcie z unikalnym tagiem
-#      - name: Build and Push Docker Image
-#        run: mvn -ntp -B verify -Ddocker.image.tag=${{ steps.build-number.outputs.BUILD_NUMBER }} jib:build
+      # Logowanie do Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
+      # Ustawienie numeru buildu
+      - name: Set build number
+        id: build-number
+        run: echo "BUILD_NUMBER=$(date '+%Y.%m.%d.%H.%M.%S')" >> $GITHUB_OUTPUT
+
+      # Budowanie obrazu Docker i jego wypchnięcie z unikalnym tagiem
+      - name: Build and Push Docker Image
+        run: mvn -ntp -B verify -Ddocker.image.tag=${{ steps.build-number.outputs.BUILD_NUMBER }} jib:build
 
       - name: Configure kubeconfig
         run: |
@@ -65,11 +65,11 @@ jobs:
       - name: Test connection to Kubernetes
         run: kubectl get pods
 
-#      # Zmiana obrazu w pliku deployment-matura-api.yaml w folderze ./deployment
-#      - name: Update deployment-matura-api.yaml with new image tag
-#        run: |
-#          sed -i 's@image: rafalnowak444/matura-api:.*@image: rafalnowak444/matura-api:${{ steps.build-number.outputs.BUILD_NUMBER }}@' ../../deployment/deployment-matura-api.yaml
-#
-#      # Wykonanie kubectl apply dla deployment-matura-api.yaml (z folderu ./deployment)
-#      - name: Apply Kubernetes Deployment
-#        run: kubectl apply -f ../../deployment/deployment-matura-api.yaml
+      # Zmiana obrazu w pliku deployment-matura-api.yaml w folderze ./deployment
+      - name: Update deployment-matura-api.yaml with new image tag
+        run: |
+          sed -i 's@image: rafalnowak444/matura-api:.*@image: rafalnowak444/matura-api:${{ steps.build-number.outputs.BUILD_NUMBER }}@' ../../deployment/deployment-matura-api.yaml
+
+      # Wykonanie kubectl apply dla deployment-matura-api.yaml (z folderu ./deployment)
+      - name: Apply Kubernetes Deployment
+        run: kubectl apply -f ../../deployment/deployment-matura-api.yaml
