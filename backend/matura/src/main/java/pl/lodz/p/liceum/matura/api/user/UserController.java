@@ -11,6 +11,7 @@ import pl.lodz.p.liceum.matura.api.task.TaskDto;
 import pl.lodz.p.liceum.matura.api.task.TaskDtoMapper;
 import pl.lodz.p.liceum.matura.appservices.TaskApplicationService;
 import pl.lodz.p.liceum.matura.appservices.UserApplicationService;
+import pl.lodz.p.liceum.matura.appservices.UserRegistrationRequest;
 import pl.lodz.p.liceum.matura.domain.task.Task;
 import pl.lodz.p.liceum.matura.domain.task.TaskState;
 import pl.lodz.p.liceum.matura.domain.user.User;
@@ -78,6 +79,14 @@ class UserController {
         User user = userService.save(userMapper.toDomain(dto));
         return ResponseEntity
                 .ok(userMapper.toDto(user));
+    }
+
+    @PostMapping(path = "/add")
+    public ResponseEntity<UserDto> saveUser(@RequestBody UserRegistrationRequest request) {
+        User user = userService.addUser(request);
+        return ResponseEntity
+                .ok(userMapper.toDto(user));
+
     }
 
     @PutMapping

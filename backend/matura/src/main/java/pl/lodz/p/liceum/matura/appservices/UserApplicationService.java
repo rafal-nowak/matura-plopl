@@ -29,6 +29,25 @@ public class UserApplicationService {
     }
 
     @Transactional
+    public User userAddTransaction(UserRegistrationRequest request) {
+        ZonedDateTime createdAt = ZonedDateTime.now(clock);
+
+        User userToSave = new User(
+                null,
+                request.email(),
+                request.username(),
+                request.password(),
+                UserRole.STUDENT,
+                0,
+                createdAt
+        );
+
+        userToSave.setCreatedAt(createdAt);
+        userToSave.setCreatedBy(0);
+        return userService.save(userToSave);
+    }
+
+    @Transactional
     public void userUpdateTransaction(User userToUpdate) {
         userService.update(userToUpdate);
     }
@@ -43,6 +62,15 @@ public class UserApplicationService {
             return userSaveTransaction(userToSave);
         } catch (DataIntegrityViolationException ex) {
             log.warning("User " + userToSave.toString() + " already exits in db");
+            throw new UserAlreadyExistsException();
+        }
+    }
+
+    public User addUser(UserRegistrationRequest request) {
+        try {
+            return userAddTransaction(request);
+        } catch (DataIntegrityViolationException ex) {
+            log.warning("User " + request.toString() + " already exits in db");
             throw new UserAlreadyExistsException();
         }
     }

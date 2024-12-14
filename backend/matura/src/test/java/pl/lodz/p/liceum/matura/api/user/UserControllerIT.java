@@ -7,7 +7,9 @@ import org.springframework.http.HttpStatus;
 import pl.lodz.p.liceum.matura.BaseIT;
 import pl.lodz.p.liceum.matura.TestUserFactory;
 import pl.lodz.p.liceum.matura.api.response.ErrorResponse;
+import pl.lodz.p.liceum.matura.appservices.UserRegistrationRequest;
 import pl.lodz.p.liceum.matura.domain.user.User;
+import pl.lodz.p.liceum.matura.domain.user.UserRole;
 import pl.lodz.p.liceum.matura.domain.user.UserService;
 
 import java.time.ZonedDateTime;
@@ -128,6 +130,37 @@ class UserControllerIT extends BaseIT {
         //assertEquals(body.createdAt().format(formatter), timeBeforeCallingTheHTTPMethod.format(formatter));
         assertTrue(timeBeforeCallingTheHTTPMethod.isBefore(body.createdAt()));
         assertEquals(body.createdBy(), admin.getId());
+    }
+
+    @Test
+    void anyone_should_be_able_to_add_new_student() {
+        //given
+        UserRegistrationRequest request = new UserRegistrationRequest(
+                "student@example.com",
+                "student",
+                "qwerty"
+        );
+
+        //when
+        var timeBeforeCallingTheHTTPMethod = ZonedDateTime.now();
+        var response = callHttpMethod(HttpMethod.POST,
+                "/api/v1/users/add",
+                null,
+                request,
+                UserDto.class);
+
+        //then
+        //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        //and
+        UserDto body = response.getBody();
+        assertNotNull(body);
+        assertEquals(body.email(), request.email());
+        assertEquals(body.username(), request.username());
+        assertEquals(body.password(), "######");
+        assertEquals(body.role(), UserRole.STUDENT.toString());
+        //assertEquals(body.createdAt().format(formatter), timeBeforeCallingTheHTTPMethod.format(formatter));
+        assertTrue(timeBeforeCallingTheHTTPMethod.isBefore(body.createdAt()));
     }
 
     @Test
