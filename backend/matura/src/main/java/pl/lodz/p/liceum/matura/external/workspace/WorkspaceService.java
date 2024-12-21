@@ -35,6 +35,25 @@ public class WorkspaceService implements Workspace {
         cloneRepository(sourceRepositoryUrl, absoluteDestinationPath);
         return absoluteDestinationPath;
     }
+    private boolean deleteFile(File file) {
+        File[] contents = file.listFiles();
+        if (contents != null) {
+            for (File f : contents) {
+                deleteFile(f);
+            }
+        }
+        try {
+            Files.delete(file.toPath());
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
+    }
+    @Override
+    public void deleteWorkspace(String rootPathUrl) {
+        if (!deleteFile(new File(rootPathUrl)))
+            throw new RuntimeException("Could not delete user workspace");
+    }
 
     @Override
     public Map<String, Object> readTaskDefinitionFile(final String rootPathUrl) {

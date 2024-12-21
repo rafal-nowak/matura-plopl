@@ -6,6 +6,7 @@ import java.util.Map;
 public interface Workspace {
 
     String createWorkspace(String sourceRepositoryUrl);
+    void deleteWorkspace(String rootPathUrl);
 
     Map<String, Object> readTaskDefinitionFile(String rootPathUrl);
 

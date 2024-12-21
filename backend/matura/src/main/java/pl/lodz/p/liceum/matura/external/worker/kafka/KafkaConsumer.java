@@ -4,13 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import pl.lodz.p.liceum.matura.config.KafkaConfiguration;
+import pl.lodz.p.liceum.matura.appservices.TaskApplicationService;
 import pl.lodz.p.liceum.matura.config.KafkaProperties;
 import pl.lodz.p.liceum.matura.domain.result.Result;
 import pl.lodz.p.liceum.matura.domain.result.ResultService;
 import pl.lodz.p.liceum.matura.domain.subtask.Subtask;
 import pl.lodz.p.liceum.matura.domain.task.Task;
-import pl.lodz.p.liceum.matura.domain.task.TaskService;
 import pl.lodz.p.liceum.matura.domain.task.TaskState;
 import pl.lodz.p.liceum.matura.domain.template.Template;
 import pl.lodz.p.liceum.matura.domain.template.TemplateService;
@@ -30,7 +29,7 @@ public class KafkaConsumer {
     private final TaskEventMapper taskEventMapper;
     private final ResultService resultService;
     private final TemplateService templateService;
-    private final TaskService taskService;
+    private final TaskApplicationService taskService;
     private final Clock clock;
 
     private final KafkaProperties kafkaProperties;
@@ -46,6 +45,7 @@ public class KafkaConsumer {
             List<Result> results = resultService.findBySubmissionId(taskEvent.getSubmissionId());
             if (results.size() == template.getNumberOfSubtasks() && results.stream().allMatch(r -> r.getScore() == 100)) {
                 updateTaskState(task, TaskState.FINISHED);
+                taskService.deleteWorkspace(task);
             }
             else {
                 updateTaskState(task, TaskState.CREATED);

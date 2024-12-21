@@ -159,4 +159,9 @@ public class TaskApplicationService {
     public Optional<Task> findPendingTaskForUser(Integer userId, Integer templateId) {
         return taskService.findByTemplateIdAndUserIdAndStateIn(templateId, userId, List.of(TaskState.CREATED, TaskState.PROCESSING));
     }
+
+    public void deleteWorkspace(Task task) {
+        String workspaceUrl = getWorkspaceUrl(task.getId());
+        workspace.deleteWorkspace(workspaceUrl);
+    }
 }
