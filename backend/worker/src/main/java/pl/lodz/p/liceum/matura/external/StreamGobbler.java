@@ -1,6 +1,7 @@
 package pl.lodz.p.liceum.matura.external;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.function.Consumer;
@@ -16,7 +17,13 @@ class StreamGobbler extends Thread {
 
     @Override
     public void run() {
-        new BufferedReader(new InputStreamReader(inputStream)).lines()
-                .forEach(consumer);
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                consumer.accept(line + System.lineSeparator()); // Dodaj nową linię po każdej linii logu
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading stream", e);
+        }
     }
 }

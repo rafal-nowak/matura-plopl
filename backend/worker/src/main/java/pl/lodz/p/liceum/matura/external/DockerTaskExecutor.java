@@ -13,6 +13,8 @@ import pl.lodz.p.liceum.matura.external.worker.task.definition.TaskDefinition;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.lang.Runtime.getRuntime;
 
@@ -28,13 +30,16 @@ public class DockerTaskExecutor implements TaskExecutor {
     private ExecutionStatus execute(Task task) {
         Process process = null;
         try {
+            StringBuilder outputLogs = new StringBuilder();
+            StringBuilder errorLogs = new StringBuilder();
+
             var command = prepareCommand(task.getWorkspaceUrl());
             process = getRuntime().exec(command);
             log.info("Execution started");
 
             // Create separate threads to handle output and error streams
-            StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), log::info);
-            StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), log::info);
+            StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), outputLogs::append);
+            StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), errorLogs::append);
 
             outputGobbler.start();
             errorGobbler.start();
@@ -45,6 +50,23 @@ public class DockerTaskExecutor implements TaskExecutor {
             errorGobbler.join();
 
             log.info("Execution finished");
+            String logs = "Standard Output:\n" + outputLogs.toString() +
+                    "\n\nStandard Error:\n" + errorLogs.toString();
+            log.info(logs);
+
+            Pattern pattern = Pattern.compile("Container (\\S+)");
+            Matcher matcher = pattern.matcher(logs);
+            matcher.find();
+            String containerName = matcher.group(1);
+            System.out.println("Nazwa kontenera: " + containerName);
+
+            var inspectCommad = "docker inspect " + containerName;
+            Process inspectProcess = getRuntime().exec(inspectCommad);
+            StringBuilder inspectResult = new StringBuilder();
+            StreamGobbler inspectGobbler = new StreamGobbler(inspectProcess.getInputStream(), inspectResult::append);
+            inspectGobbler.start();
+            inspectGobbler.join();
+            log.info("\ndocker inspect " + containerName + "\n" + inspectResult.toString());
 
             return exitCode == 0 ? ExecutionStatus.COMPLETED : ExecutionStatus.FAILED;
         } catch (InterruptedException | IOException exception) {
