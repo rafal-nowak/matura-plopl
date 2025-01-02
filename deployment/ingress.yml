@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: counter-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: counter-api.it4u.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: counter-service
+                port:
+                  number: 80
+    - host: matura-api.it4u.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: matura-service
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - counter-api.it4u.app
+      secretName: counter-api-it4u-app-tls
+    - hosts:
+        - matura-api.it4u.app
+      secretName: matura-api-it4u-app-tls

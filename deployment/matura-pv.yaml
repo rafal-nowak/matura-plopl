@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: matura-pv
+  labels:
+    type: shared-storage
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /srv/nfs/matura
+    server: 10.10.2.181
+  persistentVolumeReclaimPolicy: Retain
