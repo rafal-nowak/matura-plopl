@@ -52,7 +52,7 @@ public class WorkspaceService implements Workspace {
     @Override
     public void deleteWorkspace(String rootPathUrl) {
         if (!deleteFile(new File(rootPathUrl)))
-            throw new RuntimeException("Could not delete user workspace");
+            throw new RepositoryWasNotFoundException();
     }
 
     @Override
