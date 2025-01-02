@@ -155,6 +155,7 @@ public class DockerTaskExecutor implements TaskExecutor {
         dockerComposeGenerator.generate(
                 subtask.getWorkspaceUrl() + "/docker-compose.yml",
                 taskDefinition.getEnvironment(),
+                taskDefinition.getLimits(),
                 checkData
         );
 
