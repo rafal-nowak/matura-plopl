@@ -66,7 +66,12 @@ public class DockerTaskExecutor implements TaskExecutor {
             StreamGobbler inspectGobbler = new StreamGobbler(inspectProcess.getInputStream(), inspectResult::append);
             inspectGobbler.start();
             inspectGobbler.join();
-            log.info("\ndocker inspect " + containerName + "\n" + inspectResult.toString());
+            var inspectLogs = "\ndocker inspect " + containerName + "\n" + inspectResult.toString();
+            log.info(inspectLogs);
+
+            String logFilePath = java.nio.file.Paths.get(task.getWorkspaceUrl(), "log.txt").toString();
+            saveLogs(logFilePath, logs + inspectLogs);
+            log.info("Logged to file: " + logFilePath);
 
             return exitCode == 0 ? ExecutionStatus.COMPLETED : ExecutionStatus.FAILED;
         } catch (InterruptedException | IOException exception) {
@@ -76,6 +81,15 @@ public class DockerTaskExecutor implements TaskExecutor {
             if (process != null) {
                 process.destroy();
             }
+        }
+    }
+
+    private void saveLogs(final String path, final String content) {
+        File file = new File(path);
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write(content);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
