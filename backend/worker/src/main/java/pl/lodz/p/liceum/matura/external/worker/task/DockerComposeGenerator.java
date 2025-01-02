@@ -30,6 +30,9 @@ public class DockerComposeGenerator {
                       " ]
                     volumes:
                       - .:/code
+                    mem_limit: 6m  # Ograniczenie pamięci do 6 MB
+                    ulimits:
+                      cpu: 5         # Maksymalnie 5 sekundy czasu CPU
                                 
                 """;
         return String.format(template, taskEnvironment.getImage(), checkData.getVerification());
