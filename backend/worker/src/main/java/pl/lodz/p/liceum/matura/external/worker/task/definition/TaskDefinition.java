@@ -8,5 +8,6 @@ import java.util.Map;
 public class TaskDefinition {
     TaskEnvironment environment;
     String sourceFile;
+    TaskLimits limits;
     Map<String, Subtask> tasks;
 }
