@@ -1,5 +1,7 @@
 package pl.lodz.p.liceum.matura.external;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 
@@ -56,7 +58,10 @@ public class DockerTaskExecutor implements TaskExecutor {
 
             Pattern pattern = Pattern.compile("Container (\\S+)");
             Matcher matcher = pattern.matcher(logs);
-            matcher.find();
+            if (!matcher.find()) {
+                log.warning("Could not extract container name from logs.");
+                return ExecutionStatus.FAILED;
+            }
             String containerName = matcher.group(1);
             System.out.println("Nazwa kontenera: " + containerName);
 
@@ -72,6 +77,18 @@ public class DockerTaskExecutor implements TaskExecutor {
             String logFilePath = java.nio.file.Paths.get(task.getWorkspaceUrl(), "log.txt").toString();
             saveLogs(logFilePath, logs + inspectLogs);
             log.info("Logged to file: " + logFilePath);
+
+
+            // Analiza JSON z docker inspect
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode inspectJson = mapper.readTree(inspectResult.toString());
+            JsonNode state = inspectJson.get(0).get("State");
+
+            boolean oomKilled = state.get("OOMKilled").asBoolean();
+            int inspectExitCode = state.get("ExitCode").asInt();
+
+            log.info("OOMKilled: " + oomKilled);
+            log.info("ExitCode: " + inspectExitCode);
 
             return exitCode == 0 ? ExecutionStatus.COMPLETED : ExecutionStatus.FAILED;
         } catch (InterruptedException | IOException exception) {
