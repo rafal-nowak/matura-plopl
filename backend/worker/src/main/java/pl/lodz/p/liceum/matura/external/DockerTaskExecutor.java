@@ -25,11 +25,10 @@ import static java.lang.Runtime.getRuntime;
 @Service
 public class DockerTaskExecutor implements TaskExecutor {
 
-    private static final int SUCCESS = 0;
     private final TaskDefinitionParser taskDefinitionParser;
     private final DockerComposeGenerator dockerComposeGenerator;
 
-    private ExecutionStatus execute(Task task) {
+    private Verdict execute(Task task) {
         Process process = null;
         try {
             StringBuilder outputLogs = new StringBuilder();
@@ -60,7 +59,7 @@ public class DockerTaskExecutor implements TaskExecutor {
             Matcher matcher = pattern.matcher(logs);
             if (!matcher.find()) {
                 log.warning("Could not extract container name from logs.");
-                return ExecutionStatus.FAILED;
+                return Verdict.FAILED;
             }
             String containerName = matcher.group(1);
             System.out.println("Nazwa kontenera: " + containerName);
@@ -90,10 +89,10 @@ public class DockerTaskExecutor implements TaskExecutor {
             log.info("OOMKilled: " + oomKilled);
             log.info("ExitCode: " + inspectExitCode);
 
-            return exitCode == 0 ? ExecutionStatus.COMPLETED : ExecutionStatus.FAILED;
+            return exitCode == 0 ? Verdict.COMPLETED : Verdict.FAILED;
         } catch (InterruptedException | IOException exception) {
             log.info("Exception during execution: " + exception);
-            return ExecutionStatus.FAILED;
+            return Verdict.FAILED;
         } finally {
             if (process != null) {
                 process.destroy();
@@ -110,38 +109,22 @@ public class DockerTaskExecutor implements TaskExecutor {
         }
     }
 
-    private Result getSubtaskResult(Subtask subtask) {
-        Result result = new Result();
+    private TestResult getSubtaskResult(Subtask subtask) {
+        TestResult testResult = new TestResult();
         try {
             var description = Files.readString(Path.of(subtask.getWorkspaceUrl() + "/test_results/task_" + subtask.getNumber() + "/test_details.txt"));
             var summary = Files.readAllLines(Path.of(subtask.getWorkspaceUrl() + "/test_results/task_" + subtask.getNumber() + "/test_summary.txt"));
-            result.setDescription(description);
+            testResult.setDescription(description);
             int score = Integer.parseInt(summary.get(1).split(" ")[4]) == 0 ? 0 : Integer.parseInt(summary.get(1).split(" ")[2]) * 100 / Integer.parseInt(summary.get(1).split(" ")[4]);
-            result.setScore(score);
+            testResult.setScore(score);
         } catch (IOException e) {
             throw new ResultFileNotFoundException();
         }
-        return result;
+        return testResult;
     }
 
     @Override
-    public Result executeTask(Task task) {
-//        log.info("Task started");
-//
-//        TaskDefinition taskDefinition = taskDefinitionParser.parse(task.getWorkspaceUrl() + "/task_definition.yml");
-//
-//        dockerComposeGenerator.generate(
-//                task.getWorkspaceUrl() + "/docker-compose.yml",
-//                taskDefinition.getEnvironment(),
-//                taskDefinition.getVerification()
-//        );
-//
-//        return execute(task);
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Result executeSubtask(Subtask subtask) {
+    public TestResult executeSubtask(Subtask subtask) {
         log.info("Subtask started");
 
         TaskDefinition taskDefinition = taskDefinitionParser.parse(subtask.getWorkspaceUrl() + "/task_definition.yml");
@@ -161,7 +144,7 @@ public class DockerTaskExecutor implements TaskExecutor {
 
         var executionStatus = execute(subtask);
         var result = getSubtaskResult(subtask);
-        result.setExecutionStatus(executionStatus);
+        result.setVerdict(executionStatus);
         return result;
     }
 
