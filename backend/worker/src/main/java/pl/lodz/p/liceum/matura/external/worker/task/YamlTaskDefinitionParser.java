@@ -7,6 +7,7 @@ import pl.lodz.p.liceum.matura.external.worker.task.definition.TaskDefinition;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 
@@ -14,15 +15,14 @@ public class YamlTaskDefinitionParser implements TaskDefinitionParser {
 
     @Override
     public TaskDefinition parse(String taskDefinitionPath) {
-        try {
-            InputStream inputStream = new FileInputStream(taskDefinitionPath);
+        try (InputStream inputStream = new FileInputStream(taskDefinitionPath)) {
 
             var loaderOptions = new LoaderOptions();
             loaderOptions.setEnumCaseSensitive(false);
             Yaml yaml = new Yaml(new Constructor(TaskDefinition.class, loaderOptions));
 
             return yaml.load(inputStream);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

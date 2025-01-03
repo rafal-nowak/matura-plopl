@@ -8,6 +8,7 @@ public record SubmissionDto(
         Integer id,
         Integer taskId,
         VerificationType verification,
+        String sourceCode,
         Integer submittedBy,
         ZonedDateTime submittedAt
 ) {

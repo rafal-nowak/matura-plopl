@@ -59,7 +59,6 @@ jobs:
       - name: Logout from Docker Hub
         run: docker logout
 
-
       - name: Configure kubeconfig
         run: |
           mkdir -p $HOME/.kube

@@ -33,7 +33,8 @@ public class SubmissionEntity {
     private Integer taskId;
     @Column(name="verification", nullable = false)
     private VerificationType verification;
-
+    @Column(name = "source_code", nullable = false, columnDefinition = "TEXT")
+    private String sourceCode;
     @Column(name="submitted_by", nullable = false)
     private Integer submittedBy;
 
