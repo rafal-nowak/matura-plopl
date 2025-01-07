@@ -102,8 +102,18 @@ class SimpleFileLockTest extends BaseIT {
         Path lockFilePath = Paths.get(TEST_FOLDER, "lock.txt");
         Files.writeString(lockFilePath, "Invalid Data\n");
 
-        Exception exception = assertThrows(IllegalStateException.class, () -> new SimpleFileLock(TEST_FOLDER, 60));
-        assertEquals("Invalid lock file format: Unable to parse expiration time.", exception.getMessage());
+        // Upewnij się, że konstruktora nie wyrzuca wyjątku
+        assertDoesNotThrow(() -> new SimpleFileLock(TEST_FOLDER, 60));
+
+        // Sprawdź, czy plik został nadpisany
+        String content = Files.readString(lockFilePath);
+        String[] lines = content.split("\\n");
+
+        // Nowy plik powinien zawierać jedną linię - poprawny timestamp
+        assertEquals(1, lines.length, "Lock file should contain one line.");
+        assertDoesNotThrow(() -> LocalDateTime.parse(lines[0], DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                "Line should be a valid timestamp.");
     }
+
 
 }
