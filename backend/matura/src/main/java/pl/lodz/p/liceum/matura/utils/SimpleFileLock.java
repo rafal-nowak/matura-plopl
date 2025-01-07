@@ -38,7 +38,7 @@ public class SimpleFileLock {
                     createLockFile(timeoutInSeconds);
                 }
             } catch (DateTimeParseException e) {
-                throw new IllegalStateException("Invalid lock file format: Unable to parse expiration time.", e);
+                createLockFile(timeoutInSeconds);
             }
         } else {
             createLockFile(timeoutInSeconds);
