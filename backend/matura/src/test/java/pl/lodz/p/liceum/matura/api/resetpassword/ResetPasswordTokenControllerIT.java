@@ -15,6 +15,10 @@ import pl.lodz.p.liceum.matura.domain.resetpassword.ResetPasswordToken;
 import pl.lodz.p.liceum.matura.domain.user.User;
 import pl.lodz.p.liceum.matura.domain.user.UserService;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -27,6 +31,8 @@ class ResetPasswordTokenControllerIT extends BaseIT {
 
     @Autowired
     ResetPasswordService resetPasswordService;
+
+    private final Clock fixedClock = Clock.fixed(Instant.parse("2025-01-01T12:00:00Z"), ZoneId.of("UTC"));
 
     @Test
     void user_should_be_able_to_generate_reset_access_token() {
@@ -196,6 +202,30 @@ class ResetPasswordTokenControllerIT extends BaseIT {
 
         //then
         assertFalse(userCanChangePassword);
+    }
+
+    @Test
+    void user_should_not_be_able_to_change_forgotten_password_using_obsolete_reset_access_token() {
+
+        //given
+        User user = TestUserFactory.createStudent();
+        service.save(user);
+        final ResetPasswordToken resetPasswordToken = resetPasswordService.createResetPasswordToken(user.getEmail(), fixedClock);
+        ResetPasswordRequest request = new ResetPasswordRequest(
+                user.getEmail(),
+                resetPasswordToken.getToken(),
+                "newPassword"
+        );
+
+        //when
+        var response = callHttpMethod(HttpMethod.POST,
+                "/api/v1/auth/reset/password",
+                null,
+                request,
+                ErrorResponse.class);
+
+        //then
+        assertEquals(HttpStatus.METHOD_NOT_ALLOWED, response.getStatusCode());
     }
 
 }

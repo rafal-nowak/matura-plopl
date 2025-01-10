@@ -114,12 +114,13 @@ public class DomainConfiguration {
     @Bean
     public ResetPasswordTokenRepository resetPasswordTokenRepository(
             JpaResetPasswordTokenRepository jpaResetPasswordTokenRepository,
-            ResetPasswordTokenEntityMapper mapper) {
-        return new ResetPasswordTokenStorageAdapter(jpaResetPasswordTokenRepository, mapper);
+            ResetPasswordTokenEntityMapper mapper,
+            Clock clock) {
+        return new ResetPasswordTokenStorageAdapter(jpaResetPasswordTokenRepository, mapper, clock);
     }
 
     @Bean
-    public ResetPasswordService resetPasswordService(ResetPasswordTokenRepository resetPasswordTokenRepository) {
-        return new ResetPasswordService(resetPasswordTokenRepository);
+    public ResetPasswordService resetPasswordService(ResetPasswordTokenRepository resetPasswordTokenRepository, Clock clock) {
+        return new ResetPasswordService(resetPasswordTokenRepository, clock);
     }
 }

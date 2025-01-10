@@ -7,6 +7,7 @@ import pl.lodz.p.liceum.matura.domain.resetpassword.ResetPasswordToken;
 import pl.lodz.p.liceum.matura.domain.resetpassword.ResetPasswordTokenNotGeneratedException;
 import pl.lodz.p.liceum.matura.domain.resetpassword.ResetPasswordTokenRepository;
 
+import java.time.Clock;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -16,6 +17,7 @@ class ResetPasswordTokenStorageAdapter implements ResetPasswordTokenRepository {
 
     private final JpaResetPasswordTokenRepository repository;
     private final ResetPasswordTokenEntityMapper mapper;
+    private final Clock clock;
 
 
     @Override
@@ -33,7 +35,8 @@ class ResetPasswordTokenStorageAdapter implements ResetPasswordTokenRepository {
     @Override
     public Optional<ResetPasswordToken> findByToken(final String token) {
         Optional<ResetPasswordTokenEntity> optional = repository.findByToken(token);
-        return optional.map(mapper::toDomain);
+        return optional.map(resetPasswordTokenEntity -> mapper.mapToDomainWithClock(resetPasswordTokenEntity, clock));
+
     }
 
     @Override
