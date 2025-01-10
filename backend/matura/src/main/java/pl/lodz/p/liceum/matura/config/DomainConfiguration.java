@@ -3,10 +3,15 @@ package pl.lodz.p.liceum.matura.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.lodz.p.liceum.matura.domain.resetpassword.ResetPasswordService;
+import pl.lodz.p.liceum.matura.domain.resetpassword.ResetPasswordTokenRepository;
 import pl.lodz.p.liceum.matura.domain.result.ResultRepository;
 import pl.lodz.p.liceum.matura.domain.result.ResultService;
 import pl.lodz.p.liceum.matura.domain.submission.SubmissionRepository;
 import pl.lodz.p.liceum.matura.domain.submission.SubmissionService;
+import pl.lodz.p.liceum.matura.external.storage.resetpassword.JpaResetPasswordTokenRepository;
+import pl.lodz.p.liceum.matura.external.storage.resetpassword.ResetPasswordTokenEntityMapper;
+import pl.lodz.p.liceum.matura.external.storage.resetpassword.ResetPasswordTokenStorageAdapter;
 import pl.lodz.p.liceum.matura.external.storage.result.JpaResultRepository;
 import pl.lodz.p.liceum.matura.external.storage.result.ResultEntityMapper;
 import pl.lodz.p.liceum.matura.external.storage.result.ResultStorageAdapter;
@@ -103,5 +108,18 @@ public class DomainConfiguration {
     @Bean
     public ResultService resultService(ResultRepository resultRepository) {
         return new ResultService(resultRepository);
+    }
+
+
+    @Bean
+    public ResetPasswordTokenRepository resetPasswordTokenRepository(
+            JpaResetPasswordTokenRepository jpaResetPasswordTokenRepository,
+            ResetPasswordTokenEntityMapper mapper) {
+        return new ResetPasswordTokenStorageAdapter(jpaResetPasswordTokenRepository, mapper);
+    }
+
+    @Bean
+    public ResetPasswordService resetPasswordService(ResetPasswordTokenRepository resetPasswordTokenRepository) {
+        return new ResetPasswordService(resetPasswordTokenRepository);
     }
 }

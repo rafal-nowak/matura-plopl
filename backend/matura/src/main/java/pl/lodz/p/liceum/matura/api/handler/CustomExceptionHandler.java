@@ -8,6 +8,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import pl.lodz.p.liceum.matura.api.response.ErrorResponse;
 import pl.lodz.p.liceum.matura.appservices.verifier.UserIsNotAuthorizedToThisTaskException;
 import pl.lodz.p.liceum.matura.appservices.verifier.UserIsNotAuthorizedToThisTemplateException;
+import pl.lodz.p.liceum.matura.domain.resetpassword.PasswordNotChangedException;
 import pl.lodz.p.liceum.matura.domain.user.UserAlreadyExistsException;
 import pl.lodz.p.liceum.matura.domain.user.UserNotFoundException;
 
@@ -31,8 +32,14 @@ class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public final ResponseEntity<ErrorResponse> handleUserIsNotAuthorizedToThisTemplateException(UserIsNotAuthorizedToThisTemplateException ex) {
         return buildResponse(ex, HttpStatus.METHOD_NOT_ALLOWED);
     }
+
     @ExceptionHandler(UserIsNotAuthorizedToThisTaskException.class)
     public final ResponseEntity<ErrorResponse> handleUserIsNotAuthorizedToThisTaskException(UserIsNotAuthorizedToThisTaskException ex) {
+        return buildResponse(ex, HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    @ExceptionHandler(PasswordNotChangedException.class)
+    public final ResponseEntity<ErrorResponse> handlePasswordNotChangedException(PasswordNotChangedException ex) {
         return buildResponse(ex, HttpStatus.METHOD_NOT_ALLOWED);
     }
 

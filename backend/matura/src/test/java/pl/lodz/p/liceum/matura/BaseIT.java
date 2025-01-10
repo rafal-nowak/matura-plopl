@@ -17,6 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import pl.lodz.p.liceum.matura.domain.user.User;
 import pl.lodz.p.liceum.matura.domain.user.UserRole;
 import pl.lodz.p.liceum.matura.domain.user.UserService;
+import pl.lodz.p.liceum.matura.external.storage.resetpassword.JpaResetPasswordTokenRepository;
 import pl.lodz.p.liceum.matura.external.storage.user.JpaUserRepository;
 import pl.lodz.p.liceum.matura.security.JWTUtil;
 
@@ -53,9 +54,14 @@ public class BaseIT {
 
     @Autowired
     private JpaUserRepository jpaUserRepository;
+
+    @Autowired
+    private JpaResetPasswordTokenRepository jpaResetPasswordTokenRepository;
+
     @BeforeEach
     void init() {
         jpaUserRepository.deleteAll();
+        jpaResetPasswordTokenRepository.deleteAll();
         addTestUsers();
     }
 
