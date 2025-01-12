@@ -7,6 +7,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import pl.lodz.p.liceum.matura.config.KafkaProperties;
+import pl.lodz.p.liceum.matura.external.email.IEmailSender;
 import pl.lodz.p.liceum.matura.external.email.SendEmailCommand;
 
 @Log
@@ -16,12 +17,14 @@ public class KafkaSendEmailCommandProcessor {
 
     private final KafkaProperties kafkaProperties;
     private final KafkaTemplate<String, SendEmailCommand> kafkaTemplate;
+    private final IEmailSender sender;
 
 
     @KafkaListener(topics = "#{kafkaProperties.emailCommandTopic}", groupId = "#{kafkaProperties.groupId}", containerFactory = "emailKafkaListenerFactory")
     public void onReceive(SendEmailCommand sendEmailCommand) {
 
         log.info("Received SendEmailCommand: " + sendEmailCommand);
+        sender.send(sendEmailCommand);
 
     }
 }
