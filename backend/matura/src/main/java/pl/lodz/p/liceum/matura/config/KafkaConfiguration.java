@@ -13,6 +13,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import pl.lodz.p.liceum.matura.external.email.SendEmailCommand;
 import pl.lodz.p.liceum.matura.external.worker.kafka.KafkaTaskEvent;
 import pl.lodz.p.liceum.matura.external.worker.task.events.TaskEvent;
 
@@ -75,5 +76,21 @@ public class KafkaConfiguration {
     @Bean
     public KafkaTaskEvent kafkaUserTaskEvent(KafkaTemplate<String, TaskEvent> kafkaTemplate){
         return new KafkaTaskEvent(kafkaProperties, kafkaTemplate);
+    }
+
+    // Configuration for SendEmailCommand
+    @Bean
+    public ProducerFactory<String, SendEmailCommand> emailCommandProducerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+
+    @Bean
+    public KafkaTemplate<String, SendEmailCommand> emailCommandKafkaTemplate() {
+        return new KafkaTemplate<>(emailCommandProducerFactory());
     }
 }

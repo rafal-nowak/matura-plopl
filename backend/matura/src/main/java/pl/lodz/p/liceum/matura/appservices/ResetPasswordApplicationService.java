@@ -10,6 +10,10 @@ import pl.lodz.p.liceum.matura.domain.resetpassword.ResetPasswordToken;
 import pl.lodz.p.liceum.matura.domain.user.User;
 import pl.lodz.p.liceum.matura.domain.user.UserService;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -18,11 +22,22 @@ public class ResetPasswordApplicationService {
 
     private final ResetPasswordService resetPasswordService;
     private final UserService userService;
+    private final IEmail emailService;
 
     public void generateResetPasswordToken(String email) {
         final ResetPasswordToken resetPasswordToken = resetPasswordService.createResetPasswordToken(email);
         log.info("Reset password token created: " + resetPasswordToken);
         // send reset password token via email
+        emailService.send(
+                new Email(
+                        "Reset Password Token",
+                        Collections.singletonList(email),
+                        Collections.emptyList(),
+                        Collections.emptyList(),
+                        "Your reset token: " + resetPasswordToken.getToken()
+                )
+        );
+
     }
 
     @Transactional

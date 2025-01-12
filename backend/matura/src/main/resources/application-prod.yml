@@ -40,6 +40,8 @@ kafka:
     trusted-packages: "*"
     command-topic: Kafka_Task_json
     report-topic: Kafka_Task_Report_json
+    email-command-topic: Kafka_Email_json
+    email-report-topic: Kafka_Email_Report_json
 
 volume:
     path: /tmp/files/

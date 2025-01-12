@@ -14,8 +14,6 @@ public class KafkaProperties {
     private String groupId;
     private String trustedPackages;
     private String topic;
-    private String commandTopic;
-    private String reportTopic;
     private String emailCommandTopic;
     private String emailReportTopic;
 }

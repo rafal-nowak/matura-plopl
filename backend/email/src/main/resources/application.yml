@@ -12,26 +12,13 @@ management:
       enabled: true
     readinessState:
       enabled: true
+
 spring:
-  #    profiles:
-  #        active: prod-test
   application:
-    name: matura-api
-  datasource:
-    url: jdbc:postgresql://localhost:5432/defaultdb
-    username: user
-    password: password
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-    show-sql: true
+    name: email
 
 server:
-  port: 8080
+  port: 8082
   error:
     include-message: always
 
@@ -39,8 +26,6 @@ kafka:
   bootstrap-servers: 127.0.0.1:9092
   group-id: group_json
   trusted-packages: "*"
-  command-topic: Kafka_Task_json
-  report-topic: Kafka_Task_Report_json
   email-command-topic: Kafka_Email_json
   email-report-topic: Kafka_Email_Report_json
 
