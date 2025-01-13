@@ -8,5 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CheckData {
-    String verification;
+    String inputFilesDirectory;
+    String outputFilesDirectory;
 }
