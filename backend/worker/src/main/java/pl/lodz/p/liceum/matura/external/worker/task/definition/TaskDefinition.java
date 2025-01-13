@@ -6,7 +6,6 @@ import java.util.Map;
 
 @Data
 public class TaskDefinition {
-    TaskEnvironment environment;
     String sourceFile;
     TaskLimits limits;
     Map<String, Subtask> tasks;

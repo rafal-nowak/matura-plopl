@@ -10,6 +10,7 @@ import java.util.Map;
 public class Subtask {
 
     Map<String, CheckData> checkTypes;
-
-    List<String> results;
+    String testedFunctionName;
+    String userInputFilename;
+    String userOutputFilename;
 }

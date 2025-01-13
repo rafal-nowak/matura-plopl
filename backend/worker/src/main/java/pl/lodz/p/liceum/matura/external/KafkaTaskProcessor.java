@@ -31,14 +31,6 @@ public class KafkaTaskProcessor {
                 Subtask subtask = new Subtask(taskEvent.getWorkspaceUrl(), i, TestType.FULL);
                 TestResult testResult = taskExecutor.executeSubtask(subtask);
 
-                if (testResult.getVerdict() == Verdict.FAILED) {
-                    kafkaTemplate.send(
-                            kafkaProperties.getReportTopic(),
-                            new SubtaskProcessingFailedEvent(taskEvent.getTaskId(), taskSentForProcessingEvent.getSubmissionId(), subtask.getWorkspaceUrl(), subtask.getNumber())
-                    );
-                    return;
-                }
-
                 kafkaTemplate.send(
                         kafkaProperties.getReportTopic(),
                         new SubtaskFullProcessingCompleteEvent(taskEvent.getTaskId(), taskSentForProcessingEvent.getSubmissionId(), subtask.getWorkspaceUrl(), subtask.getNumber(), testResult.getScore(), testResult.getDescription())
@@ -55,14 +47,6 @@ public class KafkaTaskProcessor {
             Subtask subtask = new Subtask(taskEvent.getWorkspaceUrl(), subtaskSentForFastProcessingEvent.getNumber(), TestType.FAST);
             TestResult testResult = taskExecutor.executeSubtask(subtask);
 
-            if (testResult.getVerdict() == Verdict.FAILED) {
-                kafkaTemplate.send(
-                        kafkaProperties.getReportTopic(),
-                        new SubtaskProcessingFailedEvent(taskEvent.getTaskId(), subtaskSentForFastProcessingEvent.getSubmissionId(), subtask.getWorkspaceUrl(), subtask.getNumber())
-                );
-                return;
-            }
-
             kafkaTemplate.send(
                     kafkaProperties.getReportTopic(),
                     new SubtaskFastProcessingCompleteEvent(taskEvent.getTaskId(), subtaskSentForFastProcessingEvent.getSubmissionId(), subtask.getWorkspaceUrl(), subtask.getNumber(), testResult.getScore(), testResult.getDescription())
@@ -72,14 +56,6 @@ public class KafkaTaskProcessor {
             log.info("Received SubtaskSentForFullProcessingEvent: " + taskEvent);
             Subtask subtask = new Subtask(taskEvent.getWorkspaceUrl(), subtaskSentForFullProcessingEvent.getNumber(), TestType.FULL);
             TestResult testResult = taskExecutor.executeSubtask(subtask);
-
-            if (testResult.getVerdict() == Verdict.FAILED) {
-                kafkaTemplate.send(
-                        kafkaProperties.getReportTopic(),
-                        new SubtaskProcessingFailedEvent(taskEvent.getTaskId(), subtaskSentForFullProcessingEvent.getSubmissionId(), subtask.getWorkspaceUrl(), subtask.getNumber())
-                );
-                return;
-            }
 
             kafkaTemplate.send(
                     kafkaProperties.getReportTopic(),
