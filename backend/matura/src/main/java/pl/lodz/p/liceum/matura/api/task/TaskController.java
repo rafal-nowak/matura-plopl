@@ -10,7 +10,7 @@ import pl.lodz.p.liceum.matura.api.response.MessageResponse;
 import pl.lodz.p.liceum.matura.api.submission.SubmissionDto;
 import pl.lodz.p.liceum.matura.api.submission.SubmissionDtoMapper;
 import pl.lodz.p.liceum.matura.appservices.TaskApplicationService;
-import pl.lodz.p.liceum.matura.domain.result.ResultService;
+import pl.lodz.p.liceum.matura.domain.result.SubtaskResultService;
 import pl.lodz.p.liceum.matura.domain.submission.Submission;
 import pl.lodz.p.liceum.matura.domain.submission.VerificationType;
 import pl.lodz.p.liceum.matura.domain.task.*;
@@ -27,7 +27,7 @@ public class TaskController {
 
     private final TaskApplicationService taskService;
     private final TaskDtoMapper taskMapper;
-    private final ResultService resultService;
+    private final SubtaskResultService subtaskResultService;
     private final SubmissionDtoMapper submissionMapper;
 
     @GetMapping(path = "/{id}")

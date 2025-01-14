@@ -1,5 +1,5 @@
 ### login admin
-POST http://localhost:8080/api/v1/auth/login
+POST https://matura-api.it4u.app/api/v1/auth/login
 Accept: application/json
 Content-Type: application/json
 
@@ -12,8 +12,8 @@ Content-Type: application/json
     client.global.set("auth_token", "Bearer " + response.body.token);
 %}
 
-### get result by id
-GET http://localhost:8080/api/v1/results/1
+### get subtaskResult by id
+GET https://matura-api.it4u.app/api/v1/subtaskResults/1
 Accept: application/json
 Content-Type: application/json
 Authorization: {{auth_token}}

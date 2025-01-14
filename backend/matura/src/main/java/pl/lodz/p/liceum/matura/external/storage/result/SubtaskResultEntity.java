@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ResultEntity {
+public class SubtaskResultEntity {
     @Id
     @SequenceGenerator(
             name = "result_id_seq",
@@ -40,7 +40,7 @@ public class ResultEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ResultEntity that = (ResultEntity) o;
+        SubtaskResultEntity that = (SubtaskResultEntity) o;
         return id.equals(that.id);
     }
 

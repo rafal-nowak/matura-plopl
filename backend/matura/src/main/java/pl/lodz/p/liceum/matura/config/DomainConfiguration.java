@@ -3,13 +3,13 @@ package pl.lodz.p.liceum.matura.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.lodz.p.liceum.matura.domain.result.ResultRepository;
-import pl.lodz.p.liceum.matura.domain.result.ResultService;
+import pl.lodz.p.liceum.matura.domain.result.SubtaskResultRepository;
+import pl.lodz.p.liceum.matura.domain.result.SubtaskResultService;
 import pl.lodz.p.liceum.matura.domain.submission.SubmissionRepository;
 import pl.lodz.p.liceum.matura.domain.submission.SubmissionService;
-import pl.lodz.p.liceum.matura.external.storage.result.JpaResultRepository;
-import pl.lodz.p.liceum.matura.external.storage.result.ResultEntityMapper;
-import pl.lodz.p.liceum.matura.external.storage.result.ResultStorageAdapter;
+import pl.lodz.p.liceum.matura.external.storage.result.JpaSubtaskResultRepository;
+import pl.lodz.p.liceum.matura.external.storage.result.SubtaskResultEntityMapper;
+import pl.lodz.p.liceum.matura.external.storage.result.SubtaskResultStorageAdapter;
 import pl.lodz.p.liceum.matura.external.storage.submissions.JpaSubmissionRepository;
 import pl.lodz.p.liceum.matura.external.storage.submissions.SubmissionEntityMapper;
 import pl.lodz.p.liceum.matura.external.storage.submissions.SubmissionStorageAdapter;
@@ -96,12 +96,12 @@ public class DomainConfiguration {
         return new SubmissionService(submissionRepository);
     }
     @Bean
-    public ResultRepository resultRepository(JpaResultRepository jpaResultRepository, ResultEntityMapper mapper) {
-        return new ResultStorageAdapter(jpaResultRepository, mapper);
+    public SubtaskResultRepository subtaskResultRepository(JpaSubtaskResultRepository jpaSubtaskResultRepository, SubtaskResultEntityMapper mapper) {
+        return new SubtaskResultStorageAdapter(jpaSubtaskResultRepository, mapper);
     }
 
     @Bean
-    public ResultService resultService(ResultRepository resultRepository) {
-        return new ResultService(resultRepository);
+    public SubtaskResultService subtaskResultService(SubtaskResultRepository subtaskResultRepository) {
+        return new SubtaskResultService(subtaskResultRepository);
     }
 }

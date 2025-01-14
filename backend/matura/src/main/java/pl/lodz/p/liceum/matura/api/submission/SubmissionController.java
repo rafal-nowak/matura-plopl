@@ -3,10 +3,10 @@ package pl.lodz.p.liceum.matura.api.submission;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.lodz.p.liceum.matura.api.result.ResultDto;
-import pl.lodz.p.liceum.matura.api.result.ResultDtoMapper;
-import pl.lodz.p.liceum.matura.domain.result.Result;
-import pl.lodz.p.liceum.matura.domain.result.ResultService;
+import pl.lodz.p.liceum.matura.api.result.SubtaskResultDto;
+import pl.lodz.p.liceum.matura.api.result.SubtaskResultDtoMapper;
+import pl.lodz.p.liceum.matura.domain.result.SubtaskResult;
+import pl.lodz.p.liceum.matura.domain.result.SubtaskResultService;
 import pl.lodz.p.liceum.matura.domain.submission.Submission;
 import pl.lodz.p.liceum.matura.domain.submission.SubmissionService;
 
@@ -20,8 +20,8 @@ public class SubmissionController {
 
     private final SubmissionService submissionService;
     private final SubmissionDtoMapper submissionMapper;
-    private final ResultService resultService;
-    private final ResultDtoMapper resultMapper;
+    private final SubtaskResultService subtaskResultService;
+    private final SubtaskResultDtoMapper resultMapper;
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<SubmissionDto> getSubmission(@PathVariable Integer id) {
@@ -30,10 +30,10 @@ public class SubmissionController {
     }
 
     @GetMapping(path = "/{id}/results")
-    public ResponseEntity<List<ResultDto>> getResults(@PathVariable Integer id) {
-        List<Result> results = resultService.findBySubmissionId(id);
+    public ResponseEntity<List<SubtaskResultDto>> getResults(@PathVariable Integer id) {
+        List<SubtaskResult> subtaskResults = subtaskResultService.findBySubmissionId(id);
         return ResponseEntity.ok(
-                results.stream()
+                subtaskResults.stream()
                         .map(resultMapper::toDto)
                         .toList());
     }
