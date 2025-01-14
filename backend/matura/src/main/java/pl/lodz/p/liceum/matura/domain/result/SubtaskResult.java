@@ -9,7 +9,7 @@ import java.time.ZonedDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Result {
+public class SubtaskResult {
     private Integer id;
     private Integer submissionId;
     private Integer subtaskNumber;

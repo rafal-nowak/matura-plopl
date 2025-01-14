@@ -3,36 +3,36 @@ package pl.lodz.p.liceum.matura.external.storage.result;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.dao.DataIntegrityViolationException;
-import pl.lodz.p.liceum.matura.domain.result.Result;
+import pl.lodz.p.liceum.matura.domain.result.SubtaskResult;
 import pl.lodz.p.liceum.matura.domain.result.ResultAlreadyExistsException;
-import pl.lodz.p.liceum.matura.domain.result.ResultRepository;
+import pl.lodz.p.liceum.matura.domain.result.SubtaskResultRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 @Log
-public class ResultStorageAdapter implements ResultRepository {
+public class SubtaskResultStorageAdapter implements SubtaskResultRepository {
 
-    private final JpaResultRepository repository;
-    private final ResultEntityMapper mapper;
+    private final JpaSubtaskResultRepository repository;
+    private final SubtaskResultEntityMapper mapper;
 
     @Override
-    public Result save(final Result result) {
+    public SubtaskResult save(final SubtaskResult subtaskResult) {
         try {
-            var a = mapper.toEntity(result);
-            ResultEntity saved = repository.save(mapper.toEntity(result));
+            var a = mapper.toEntity(subtaskResult);
+            SubtaskResultEntity saved = repository.save(mapper.toEntity(subtaskResult));
             log.info("Saved entity " + saved);
             return mapper.toDomain(saved);
         } catch (DataIntegrityViolationException e) {
-            log.warning("Result " + result.getId() + " already exists");
+            log.warning("Result " + subtaskResult.getId() + " already exists");
             throw new ResultAlreadyExistsException();
         }
     }
 
     @Override
-    public void update(final Result result) {
-        repository.findById(result.getId()).ifPresent(taskEntity -> repository.save(mapper.toEntity(result)));
+    public void update(final SubtaskResult subtaskResult) {
+        repository.findById(subtaskResult.getId()).ifPresent(taskEntity -> repository.save(mapper.toEntity(subtaskResult)));
     }
 
     @Override
@@ -41,12 +41,12 @@ public class ResultStorageAdapter implements ResultRepository {
     }
 
     @Override
-    public Optional<Result> findById(final Integer id) {
+    public Optional<SubtaskResult> findById(final Integer id) {
         return repository.findById(id).map(mapper::toDomain);
     }
 
     @Override
-    public List<Result> findBySubmissionId(final Integer submissionId) {
+    public List<SubtaskResult> findBySubmissionId(final Integer submissionId) {
         return repository.findBySubmissionId(submissionId).stream().map(mapper::toDomain).toList();
     }
 }
