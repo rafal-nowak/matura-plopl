@@ -18,8 +18,8 @@ Accept: application/json
 Content-Type: application/json
 Authorization: {{auth_token}}
 
-### get submission results by submission id
-GET https://matura-api.it4u.app/api/v1/submissions/1/results
+### get submission subtaskResults by submission id
+GET https://matura-api.it4u.app/api/v1/submissions/1/subtaskResults
 Accept: application/json
 Content-Type: application/json
 Authorization: {{auth_token}}

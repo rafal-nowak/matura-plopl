@@ -2,7 +2,7 @@ package pl.lodz.p.liceum.matura.api.result;
 
 import java.time.ZonedDateTime;
 
-public record ResultDto(
+public record SubtaskResultDto(
         Integer id,
         Integer submissionId,
         Integer subtaskNumber,
