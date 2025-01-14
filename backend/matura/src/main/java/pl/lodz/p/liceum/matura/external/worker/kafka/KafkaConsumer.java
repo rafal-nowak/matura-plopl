@@ -6,8 +6,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import pl.lodz.p.liceum.matura.appservices.TaskApplicationService;
 import pl.lodz.p.liceum.matura.config.KafkaProperties;
-import pl.lodz.p.liceum.matura.domain.result.Result;
-import pl.lodz.p.liceum.matura.domain.result.ResultService;
+import pl.lodz.p.liceum.matura.domain.result.SubtaskResult;
+import pl.lodz.p.liceum.matura.domain.result.SubtaskResultService;
 import pl.lodz.p.liceum.matura.domain.subtask.Subtask;
 import pl.lodz.p.liceum.matura.domain.task.Task;
 import pl.lodz.p.liceum.matura.domain.task.TaskState;
@@ -27,7 +27,7 @@ public class KafkaConsumer {
 
     private final SubtaskEventMapper subtaskEventMapper;
     private final TaskEventMapper taskEventMapper;
-    private final ResultService resultService;
+    private final SubtaskResultService subtaskResultService;
     private final TemplateService templateService;
     private final TaskApplicationService taskService;
     private final Clock clock;
@@ -42,8 +42,8 @@ public class KafkaConsumer {
             Task task = taskService.findById(taskEvent.getTaskId());
             Template template = templateService.findById(task.getTemplateId());
             log.info("Processing of task completed successfully at " + task.getWorkspaceUrl());
-            List<Result> results = resultService.findBySubmissionId(taskEvent.getSubmissionId());
-            if (results.size() == template.getNumberOfSubtasks() && results.stream().allMatch(r -> r.getScore() == 100)) {
+            List<SubtaskResult> subtaskResults = subtaskResultService.findBySubmissionId(taskEvent.getSubmissionId());
+            if (subtaskResults.size() == template.getNumberOfSubtasks() && subtaskResults.stream().allMatch(r -> r.getScore() == 100)) {
                 updateTaskState(task, TaskState.FINISHED);
                 taskService.deleteWorkspace(task);
             }
@@ -53,13 +53,13 @@ public class KafkaConsumer {
         } else if (taskEvent instanceof SubtaskFastProcessingCompleteEvent event) {
             Subtask subtask = subtaskEventMapper.toDomain(event);
             log.info(String.format("Fast processing of subtask %s completed successfully with score %d", subtask.getNumber(), event.getScore()));
-            Result result = new Result(null, subtask.getSubmissionId(), subtask.getNumber(), event.getDescription(), event.getScore(), ZonedDateTime.now(clock));
-            resultService.save(result);
+            SubtaskResult subtaskResult = new SubtaskResult(null, subtask.getSubmissionId(), subtask.getNumber(), event.getDescription(), event.getScore(), ZonedDateTime.now(clock));
+            subtaskResultService.save(subtaskResult);
         } else if (taskEvent instanceof SubtaskFullProcessingCompleteEvent event) {
             Subtask subtask = subtaskEventMapper.toDomain(event);
             log.info(String.format("Full processing of subtask %s completed successfully with score %d", subtask.getNumber(), event.getScore()));
-            Result result = new Result(null, subtask.getSubmissionId(), subtask.getNumber(), event.getDescription(), event.getScore(), ZonedDateTime.now(clock));
-            resultService.save(result);
+            SubtaskResult subtaskResult = new SubtaskResult(null, subtask.getSubmissionId(), subtask.getNumber(), event.getDescription(), event.getScore(), ZonedDateTime.now(clock));
+            subtaskResultService.save(subtaskResult);
         } else if (taskEvent instanceof TaskProcessingFailedEvent) {
             Task task = taskEventMapper.toDomain(taskEvent);
             log.info("Processing of task failed at " + task.getWorkspaceUrl());
