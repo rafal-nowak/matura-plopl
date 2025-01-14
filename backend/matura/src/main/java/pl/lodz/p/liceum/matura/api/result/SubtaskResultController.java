@@ -16,7 +16,7 @@ public class SubtaskResultController {
     private final SubtaskResultDtoMapper mapper;
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<SubtaskResultDto> getResult(@PathVariable Integer id) {
+    public ResponseEntity<SubtaskResultDto> getSubtaskResult(@PathVariable Integer id) {
         SubtaskResult subtaskResult = subtaskResultService.findById(id);
         return ResponseEntity.ok(mapper.toDto(subtaskResult));
     }
