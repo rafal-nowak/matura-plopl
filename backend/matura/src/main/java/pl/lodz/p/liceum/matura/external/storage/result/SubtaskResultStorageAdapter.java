@@ -25,7 +25,7 @@ public class SubtaskResultStorageAdapter implements SubtaskResultRepository {
             log.info("Saved entity " + saved);
             return mapper.toDomain(saved);
         } catch (DataIntegrityViolationException e) {
-            log.warning("Result " + subtaskResult.getId() + " already exists");
+            log.warning("SubtaskResult " + subtaskResult.getId() + " already exists");
             throw new ResultAlreadyExistsException();
         }
     }
