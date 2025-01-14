@@ -5,11 +5,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.lodz.p.liceum.matura.domain.result.SubtaskResultRepository;
 import pl.lodz.p.liceum.matura.domain.result.SubtaskResultService;
+import pl.lodz.p.liceum.matura.domain.result.TestResultRepository;
+import pl.lodz.p.liceum.matura.domain.result.TestResultService;
 import pl.lodz.p.liceum.matura.domain.submission.SubmissionRepository;
 import pl.lodz.p.liceum.matura.domain.submission.SubmissionService;
-import pl.lodz.p.liceum.matura.external.storage.result.JpaSubtaskResultRepository;
-import pl.lodz.p.liceum.matura.external.storage.result.SubtaskResultEntityMapper;
-import pl.lodz.p.liceum.matura.external.storage.result.SubtaskResultStorageAdapter;
+import pl.lodz.p.liceum.matura.external.storage.result.*;
 import pl.lodz.p.liceum.matura.external.storage.submissions.JpaSubmissionRepository;
 import pl.lodz.p.liceum.matura.external.storage.submissions.SubmissionEntityMapper;
 import pl.lodz.p.liceum.matura.external.storage.submissions.SubmissionStorageAdapter;
@@ -103,5 +103,15 @@ public class DomainConfiguration {
     @Bean
     public SubtaskResultService subtaskResultService(SubtaskResultRepository subtaskResultRepository) {
         return new SubtaskResultService(subtaskResultRepository);
+    }
+
+    @Bean
+    public TestResultRepository testResultRepository(JpaTestResultRepository jpaTestResultRepository, TestResultEntityMapper mapper) {
+        return new TestResultStorageAdapter(jpaTestResultRepository, mapper);
+    }
+
+    @Bean
+    public TestResultService testResultService(TestResultRepository testResultRepository) {
+        return new TestResultService(testResultRepository);
     }
 }
