@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - staging
     paths:
       - backend/matura/**
 
@@ -57,10 +58,23 @@ jobs:
       - name: Build and Push Docker Image
         run: mvn -ntp -B verify -Ddocker.image.tag=${{ steps.build-number.outputs.BUILD_NUMBER }} jib:build
 
+      # Wybór kubeconfig w zależności od gałęzi
+      - name: Select kubeconfig
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "${{ secrets.KUBECONFIG_CONTENT }}" > $HOME/kubeconfig
+          elif [ "${{ github.ref_name }}" = "staging" ]; then
+            echo "${{ secrets.KUBECONFIG_TEST_CONTENT }}" > $HOME/kubeconfig
+          else
+            echo "Unexpected branch: ${{ github.ref_name }}"
+            exit 1
+          fi
+
+      # Konfiguracja kubeconfig
       - name: Configure kubeconfig
         run: |
           mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG_CONTENT }}" > $HOME/.kube/config
+          mv $HOME/kubeconfig $HOME/.kube/config
 
       - name: Test connection to Kubernetes
         run: kubectl get pods
