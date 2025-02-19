@@ -20,10 +20,10 @@ Content-Type: application/json
 Authorization: {{auth_token}}
 
 {
-  "sourceUrl": "https://github.com/HubertM6/rafalnowak-simple-test-plopl",
+  "sourceUrl": "https://github.com/HubertM6/MaturaMay2015Task4",
   "taskLanguage": "PYTHON",
-  "source": "Short test",
-  "numberOfSubtasks": 1
+  "source": "Matura 05.2015 Task 4",
+  "numberOfSubtasks": 3
 }
 
 ### get template by id

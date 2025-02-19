@@ -8,5 +8,5 @@ import java.util.Map;
 public class TaskDefinition {
     String sourceFile;
     TaskLimits limits;
-    Map<String, Subtask> tasks;
+    Map<String, SubtaskDefinition> tasks;
 }

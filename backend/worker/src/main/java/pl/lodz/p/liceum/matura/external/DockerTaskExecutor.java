@@ -10,11 +10,16 @@ import pl.lodz.p.liceum.matura.domain.*;
 import pl.lodz.p.liceum.matura.external.worker.task.DockerComposeGenerator;
 import pl.lodz.p.liceum.matura.external.worker.task.TaskDefinitionParser;
 import pl.lodz.p.liceum.matura.external.worker.task.definition.CheckData;
+import pl.lodz.p.liceum.matura.external.worker.task.definition.SubtaskDefinition;
 import pl.lodz.p.liceum.matura.external.worker.task.definition.TaskDefinition;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,7 +33,7 @@ public class DockerTaskExecutor implements TaskExecutor {
     private final TaskDefinitionParser taskDefinitionParser;
     private final DockerComposeGenerator dockerComposeGenerator;
 
-    private Verdict execute(Task task) {
+    private boolean execute(Task task, TestResult testResult) {
         Process process = null;
         try {
             StringBuilder outputLogs = new StringBuilder();
@@ -55,14 +60,22 @@ public class DockerTaskExecutor implements TaskExecutor {
                     "\n\nStandard Error:\n" + errorLogs.toString();
             log.info(logs);
 
+            if (exitCode != 0)
+            {
+                testResult.setVerdict(Verdict.SYSTEM_ERROR);
+                log.info("Process exited with code " + exitCode);
+                return false;
+            }
+
             Pattern pattern = Pattern.compile("Container (\\S+)");
             Matcher matcher = pattern.matcher(logs);
             if (!matcher.find()) {
                 log.warning("Could not extract container name from logs.");
-                return Verdict.SYSTEM_ERROR;
+                testResult.setVerdict(Verdict.SYSTEM_ERROR);
+                return false;
             }
             String containerName = matcher.group(1);
-            System.out.println("Nazwa kontenera: " + containerName);
+            System.out.println("Container name: " + containerName);
 
             var inspectCommad = "docker inspect " + containerName;
             Process inspectProcess = getRuntime().exec(inspectCommad);
@@ -73,12 +86,12 @@ public class DockerTaskExecutor implements TaskExecutor {
             var inspectLogs = "\ndocker inspect " + containerName + "\n" + inspectResult.toString();
             log.info(inspectLogs);
 
-            String logFilePath = java.nio.file.Paths.get(task.getWorkspaceUrl(), "log.txt").toString();
+            String logFilePath = Paths.get(task.getWorkspaceUrl(), "log.txt").toString();
             saveLogs(logFilePath, logs + inspectLogs);
             log.info("Logged to file: " + logFilePath);
 
 
-            // Analiza JSON z docker inspect
+            // Analyse JSON with docker inspect
             ObjectMapper mapper = new ObjectMapper();
             JsonNode inspectJson = mapper.readTree(inspectResult.toString());
             JsonNode state = inspectJson.get(0).get("State");
@@ -89,13 +102,25 @@ public class DockerTaskExecutor implements TaskExecutor {
             log.info("OOMKilled: " + oomKilled);
             log.info("ExitCode: " + inspectExitCode);
 
-            if (exitCode != 0)
-                return Verdict.RUNTIME_ERROR;
+            if (oomKilled) {
+                testResult.setVerdict(Verdict.MEMORY_LIMIT_EXCEEDED);
+                return false;
+            }
+            if (inspectExitCode == 137) {
+                testResult.setVerdict(Verdict.TIME_LIMIT_EXCEEDED);
+                return false;
+            }
+            if (inspectExitCode != 0) {
+                testResult.setVerdict(Verdict.RUNTIME_ERROR);
+                testResult.setMessage("Process exited with code " + inspectExitCode);
+                return false;
+            }
 
-            return Verdict.ACCEPTED;
+            return true;
         } catch (InterruptedException | IOException exception) {
             log.info("Exception during execution: " + exception);
-            return Verdict.SYSTEM_ERROR;
+            testResult.setVerdict(Verdict.SYSTEM_ERROR);
+            return false;
         } finally {
             if (process != null) {
                 process.destroy();
@@ -130,14 +155,21 @@ public class DockerTaskExecutor implements TaskExecutor {
         return testResult;
     }
 
+    private void prepareFile(Path inputFilePath, Path destinationPath) throws IOException {
+        Files.copy(inputFilePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+    }
+
     @Override
-    public TestResult executeSubtask(Subtask subtask) {
-        log.info("Subtask started");
+    public List<TestResult> executeSubtask(Subtask subtask) {
+        log.info("Subtask execution started");
 
         TaskDefinition taskDefinition = taskDefinitionParser.parse(subtask.getWorkspaceUrl() + "/task_definition.yml");
 
         // TODO make it more robust
 
+        SubtaskDefinition subtaskDefinition = taskDefinition
+                .getTasks()
+                .get("task_" + subtask.getNumber());
         CheckData checkData = taskDefinition
                 .getTasks()
                 .get("task_" + subtask.getNumber())
@@ -150,10 +182,36 @@ public class DockerTaskExecutor implements TaskExecutor {
                 taskDefinition.getLimits()
         );
 
-        var executionStatus = execute(subtask);
-        var result = getSubtaskResult(subtask);
-        result.setVerdict(executionStatus);
-        return result;
+        File inputDirectory = new File(subtask.getWorkspaceUrl() + '/' + checkData.getInputFilesDirectory());
+        File[] inputFiles = inputDirectory.listFiles();
+
+        if (inputFiles == null) {
+            return List.of();
+        }
+
+        List<TestResult> results = new ArrayList<>();
+
+        for (File inputFile : inputFiles) {
+            if (!Files.exists(Paths.get(subtask.getWorkspaceUrl() , checkData.getOutputFilesDirectory(), inputFile.getName().replace(".in", ".out")))) {
+                log.info("Skipping file: " + inputFile.getName());
+                continue;
+            }
+
+            TestResult testResult = new TestResult();
+
+            try {
+                prepareFile(inputFile.toPath(), Paths.get(subtask.getWorkspaceUrl(), Path.of(taskDefinition.getSourceFile()).getParent().toString(), subtaskDefinition.getUserInputFilename()));
+            } catch (IOException e) {
+                testResult.setVerdict(Verdict.SYSTEM_ERROR);
+                results.add(testResult);
+                log.info("Failed to copy input file: " + inputFile.getName());
+                continue;
+            }
+            execute(subtask, testResult);
+            testResult.setVerdict(Verdict.ACCEPTED);
+            results.add(testResult);
+        }
+        return results;
     }
 
     private String[] prepareCommand(String workspaceUrl) {
@@ -162,7 +220,7 @@ public class DockerTaskExecutor implements TaskExecutor {
         if (isWindows)
             return new String[]{"powershell.exe", "/c", "docker-compose --file \"" + workspaceUrl + "\\docker-compose.yml\" up"};
         else
-            return new String[]{"sh", "-c", "cd " + workspaceUrl + "; docker-compose up"};
+            return new String[]{"sh", "-c", "cd " + workspaceUrl + "; docker compose up"};
 //            return new String[]{"sh", "-c", dockerHost + "cd " + workspaceUrl + " && docker-compose up"};
     }
 }
