@@ -136,13 +136,19 @@ public class DockerTaskExecutor implements TaskExecutor {
         }
     }
 
-    private boolean checkAnswer(String userOutputFile, String expectedOutputFile, TestResult testResult) {
+    private boolean checkAnswer(Path userOutputFile, Path expectedOutputFile, TestResult testResult) {
         try {
-            var userOutput = Files.readAllLines(Path.of(userOutputFile));
-            var expectedOutput = Files.readAllLines(Path.of(expectedOutputFile));
+            if (!Files.exists(userOutputFile)) {
+                testResult.setVerdict(Verdict.WRONG_ANSWER);
+                testResult.setMessage("No output file found");
+                return false;
+            }
 
-            if (!userOutput.isEmpty() && userOutput.getLast().isEmpty()) userOutput.removeLast();
-            if (!expectedOutput.isEmpty() && expectedOutput.getLast().isEmpty()) expectedOutput.removeLast();
+            var userOutput = Files.readAllLines(userOutputFile);
+            var expectedOutput = Files.readAllLines(expectedOutputFile);
+
+            if (!userOutput.isEmpty() && userOutput.get(userOutput.size() - 1).isEmpty()) userOutput.remove(userOutput.size() - 1);
+            if (!expectedOutput.isEmpty() && expectedOutput.get(expectedOutput.size() - 1).isEmpty()) expectedOutput.remove(expectedOutput.size() - 1);
 
             for (int i = 0; i < Math.max(userOutput.size(), expectedOutput.size()); i++) {
                 if (i >= userOutput.size()) {
@@ -169,20 +175,6 @@ public class DockerTaskExecutor implements TaskExecutor {
             return false;
         }
         return true;
-    }
-
-    private TestResult getSubtaskResult(Subtask subtask) {
-        TestResult testResult = new TestResult();
-//        try {
-//            var description = Files.readString(Path.of(subtask.getWorkspaceUrl() + "/test_results/task_" + subtask.getNumber() + "/test_details.txt"));
-//            var summary = Files.readAllLines(Path.of(subtask.getWorkspaceUrl() + "/test_results/task_" + subtask.getNumber() + "/test_summary.txt"));
-//            testResult.setDescription(description);
-//            int score = Integer.parseInt(summary.get(1).split(" ")[4]) == 0 ? 0 : Integer.parseInt(summary.get(1).split(" ")[2]) * 100 / Integer.parseInt(summary.get(1).split(" ")[4]);
-//            testResult.setScore(score);
-//        } catch (IOException e) {
-//            throw new ResultFileNotFoundException();
-//        }
-        return testResult;
     }
 
     private void prepareFile(Path inputFilePath, Path destinationPath) throws IOException {
@@ -222,7 +214,8 @@ public class DockerTaskExecutor implements TaskExecutor {
         List<TestResult> results = new ArrayList<>();
 
         for (File inputFile : inputFiles) {
-            if (!Files.exists(Paths.get(subtask.getWorkspaceUrl(), checkData.getOutputFilesDirectory(), inputFile.getName().replace(".in", ".out")))) {
+            Path outputFilePath = Paths.get(subtask.getWorkspaceUrl(), checkData.getOutputFilesDirectory(), inputFile.getName().replace(".in", ".out"));
+            if (!Files.exists(outputFilePath)) {
                 log.info("Skipping file: " + inputFile.getName());
                 continue;
             }
@@ -238,7 +231,9 @@ public class DockerTaskExecutor implements TaskExecutor {
                 continue;
             }
             if (execute(subtask, testResult)) {
-                testResult.setVerdict(Verdict.ACCEPTED);
+                Path userOutputFile = Paths.get(subtask.getWorkspaceUrl(), Path.of(taskDefinition.getSourceFile()).getParent().toString(), subtaskDefinition.getUserOutputFilename());
+                if (checkAnswer(userOutputFile, outputFilePath, testResult))
+                    testResult.setVerdict(Verdict.ACCEPTED);
             }
             results.add(testResult);
         }
