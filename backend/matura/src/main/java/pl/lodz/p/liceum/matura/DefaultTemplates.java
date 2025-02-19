@@ -21,7 +21,7 @@ public class DefaultTemplates implements CommandLineRunner {
 
     private final Template matura05_2023Python = new Template(
             null,
-            "https://github.com/HubertM6/MaturaBinaryNumbersPython",
+            "https://github.com/HubertM6/MaturaMay2015Task4",
             TaskLanguage.PYTHON,
             "Matura 05.2023",
             """
