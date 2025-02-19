@@ -8,6 +8,8 @@ import pl.lodz.p.liceum.matura.appservices.TaskApplicationService;
 import pl.lodz.p.liceum.matura.config.KafkaProperties;
 import pl.lodz.p.liceum.matura.domain.result.SubtaskResult;
 import pl.lodz.p.liceum.matura.domain.result.SubtaskResultService;
+import pl.lodz.p.liceum.matura.domain.result.TestResult;
+import pl.lodz.p.liceum.matura.domain.result.Verdict;
 import pl.lodz.p.liceum.matura.domain.subtask.Subtask;
 import pl.lodz.p.liceum.matura.domain.task.Task;
 import pl.lodz.p.liceum.matura.domain.task.TaskState;
@@ -25,7 +27,6 @@ import java.util.List;
 @Service
 public class KafkaConsumer {
 
-    private final SubtaskEventMapper subtaskEventMapper;
     private final TaskEventMapper taskEventMapper;
     private final SubtaskResultService subtaskResultService;
     private final TemplateService templateService;
@@ -51,21 +52,22 @@ public class KafkaConsumer {
                 updateTaskState(task, TaskState.CREATED);
             }
         } else if (taskEvent instanceof SubtaskFastProcessingCompleteEvent event) {
-            Subtask subtask = subtaskEventMapper.toDomain(event);
-            log.info(String.format("Fast processing of subtask %s completed successfully with score %d", subtask.getNumber(), event.getScore()));
-            SubtaskResult subtaskResult = new SubtaskResult(null, subtask.getSubmissionId(), subtask.getNumber(), event.getDescription(), event.getScore(), ZonedDateTime.now(clock));
+            log.info(String.format("Fast processing of subtask %s completed successfully", event.getNumber()));
+            int score = getScore(event.getTestResults());
+            log.info(String.format("Score: %d", score));
+            SubtaskResult subtaskResult = new SubtaskResult(null, event.getSubmissionId(), event.getNumber(), "", score, ZonedDateTime.now(clock));
             subtaskResultService.save(subtaskResult);
         } else if (taskEvent instanceof SubtaskFullProcessingCompleteEvent event) {
-            Subtask subtask = subtaskEventMapper.toDomain(event);
-            log.info(String.format("Full processing of subtask %s completed successfully with score %d", subtask.getNumber(), event.getScore()));
-            SubtaskResult subtaskResult = new SubtaskResult(null, subtask.getSubmissionId(), subtask.getNumber(), event.getDescription(), event.getScore(), ZonedDateTime.now(clock));
+            log.info(String.format("Full processing of subtask %s completed successfully", event.getNumber()));
+            int score = getScore(event.getTestResults());
+            log.info(String.format("Score: %d", score));
+            SubtaskResult subtaskResult = new SubtaskResult(null, event.getSubmissionId(), event.getNumber(), "", score, ZonedDateTime.now(clock));
             subtaskResultService.save(subtaskResult);
         } else if (taskEvent instanceof TaskProcessingFailedEvent) {
             Task task = taskEventMapper.toDomain(taskEvent);
             log.info("Processing of task failed at " + task.getWorkspaceUrl());
         } else if (taskEvent instanceof SubtaskProcessingFailedEvent event) {
-            Subtask subtask = subtaskEventMapper.toDomain(event);
-            log.info(String.format("Processing of subtask %s failed", subtask.getNumber()));
+            log.info(String.format("Processing of subtask %s failed", event.getNumber()));
         } else {
             log.info("Received taskEvent: " + taskEvent);
         }
@@ -74,5 +76,8 @@ public class KafkaConsumer {
     private void updateTaskState(Task task, TaskState state) {
         task.setState(state);
         taskService.update(task);
+    }
+    private int getScore(List<TestResult> results) {
+        return (int) results.stream().filter(r -> r.getVerdict().equals(Verdict.ACCEPTED)).count() * 100 / results.size();
     }
 }
