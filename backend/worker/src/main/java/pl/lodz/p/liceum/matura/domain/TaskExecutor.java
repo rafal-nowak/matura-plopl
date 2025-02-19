@@ -1,6 +1,8 @@
 package pl.lodz.p.liceum.matura.domain;
 
+import java.util.List;
+
 public interface TaskExecutor {
 
-    TestResult executeSubtask(Subtask subtask);
+    List<TestResult> executeSubtask(Subtask subtask);
 }
