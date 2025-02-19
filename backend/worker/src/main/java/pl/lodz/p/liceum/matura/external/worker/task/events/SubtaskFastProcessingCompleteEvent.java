@@ -3,6 +3,9 @@ package pl.lodz.p.liceum.matura.external.worker.task.events;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pl.lodz.p.liceum.matura.domain.TestResult;
+
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -12,6 +15,5 @@ public class SubtaskFastProcessingCompleteEvent extends TaskEvent {
     Integer submissionId;
     String workspaceUrl;
     Integer number;
-    Integer score;
-    String description;
+    List<TestResult> testResults;
 }
