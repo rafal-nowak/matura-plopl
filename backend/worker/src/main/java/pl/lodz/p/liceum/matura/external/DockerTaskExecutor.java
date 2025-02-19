@@ -60,8 +60,7 @@ public class DockerTaskExecutor implements TaskExecutor {
                     "\n\nStandard Error:\n" + errorLogs.toString();
             log.info(logs);
 
-            if (exitCode != 0)
-            {
+            if (exitCode != 0) {
                 testResult.setVerdict(Verdict.SYSTEM_ERROR);
                 log.info("Process exited with code " + exitCode);
                 return false;
@@ -137,9 +136,40 @@ public class DockerTaskExecutor implements TaskExecutor {
         }
     }
 
-//    private String checkAnswer(String userOutputFile, String expectedOutputFile) {
-//
-//    }
+    private boolean checkAnswer(String userOutputFile, String expectedOutputFile, TestResult testResult) {
+        try {
+            var userOutput = Files.readAllLines(Path.of(userOutputFile));
+            var expectedOutput = Files.readAllLines(Path.of(expectedOutputFile));
+
+            if (!userOutput.isEmpty() && userOutput.getLast().isEmpty()) userOutput.removeLast();
+            if (!expectedOutput.isEmpty() && expectedOutput.getLast().isEmpty()) expectedOutput.removeLast();
+
+            for (int i = 0; i < Math.max(userOutput.size(), expectedOutput.size()); i++) {
+                if (i >= userOutput.size()) {
+                    testResult.setVerdict(Verdict.WRONG_ANSWER);
+                    testResult.setMessage("Expected: " + expectedOutput.get(i) + " found: EOF");
+                    return false;
+                }
+                if (i >= expectedOutput.size()) {
+                    testResult.setVerdict(Verdict.WRONG_ANSWER);
+                    testResult.setMessage("User output contains more lines than expected");
+                    return false;
+                }
+                var userLine = userOutput.get(i).trim();
+                var expectedLine = userOutput.get(i).trim();
+                if (!userLine.equals(expectedLine)) {
+                    testResult.setVerdict(Verdict.WRONG_ANSWER);
+                    testResult.setMessage("Expected: " + expectedOutput.get(i) + " found: " + userOutput.get(i));
+                    return false;
+                }
+            }
+        } catch (IOException e) {
+            testResult.setVerdict(Verdict.SYSTEM_ERROR);
+            log.info("Failed to read output files");
+            return false;
+        }
+        return true;
+    }
 
     private TestResult getSubtaskResult(Subtask subtask) {
         TestResult testResult = new TestResult();
@@ -192,7 +222,7 @@ public class DockerTaskExecutor implements TaskExecutor {
         List<TestResult> results = new ArrayList<>();
 
         for (File inputFile : inputFiles) {
-            if (!Files.exists(Paths.get(subtask.getWorkspaceUrl() , checkData.getOutputFilesDirectory(), inputFile.getName().replace(".in", ".out")))) {
+            if (!Files.exists(Paths.get(subtask.getWorkspaceUrl(), checkData.getOutputFilesDirectory(), inputFile.getName().replace(".in", ".out")))) {
                 log.info("Skipping file: " + inputFile.getName());
                 continue;
             }
@@ -207,8 +237,9 @@ public class DockerTaskExecutor implements TaskExecutor {
                 log.info("Failed to copy input file: " + inputFile.getName());
                 continue;
             }
-            execute(subtask, testResult);
-            testResult.setVerdict(Verdict.ACCEPTED);
+            if (execute(subtask, testResult)) {
+                testResult.setVerdict(Verdict.ACCEPTED);
+            }
             results.add(testResult);
         }
         return results;
