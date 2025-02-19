@@ -162,7 +162,7 @@ public class DockerTaskExecutor implements TaskExecutor {
                     return false;
                 }
                 var userLine = userOutput.get(i).trim();
-                var expectedLine = userOutput.get(i).trim();
+                var expectedLine = expectedOutput.get(i).trim();
                 if (!userLine.equals(expectedLine)) {
                     testResult.setVerdict(Verdict.WRONG_ANSWER);
                     testResult.setMessage("Expected: " + expectedOutput.get(i) + " found: " + userOutput.get(i));

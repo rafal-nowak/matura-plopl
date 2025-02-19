@@ -20,7 +20,6 @@ public class SubtaskResultStorageAdapter implements SubtaskResultRepository {
     @Override
     public SubtaskResult save(final SubtaskResult subtaskResult) {
         try {
-            var a = mapper.toEntity(subtaskResult);
             SubtaskResultEntity saved = repository.save(mapper.toEntity(subtaskResult));
             log.info("Saved entity " + saved);
             return mapper.toDomain(saved);

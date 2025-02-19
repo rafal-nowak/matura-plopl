@@ -13,13 +13,13 @@ Content-Type: application/json
 %}
 
 ### get submission by id
-GET http://localhost:8080/api/v1/submissions/6
+GET http://localhost:8080/api/v1/submissions/3
 Accept: application/json
 Content-Type: application/json
 Authorization: {{auth_token}}
 
 ### get submission subtaskResults by submission id
-GET http://localhost:8080/api/v1/submissions/10/subtaskResults
+GET http://localhost:8080/api/v1/submissions/3/subtaskResults
 Accept: application/json
 Content-Type: application/json
 Authorization: {{auth_token}}

@@ -6,11 +6,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import pl.lodz.p.liceum.matura.appservices.TaskApplicationService;
 import pl.lodz.p.liceum.matura.config.KafkaProperties;
-import pl.lodz.p.liceum.matura.domain.result.SubtaskResult;
-import pl.lodz.p.liceum.matura.domain.result.SubtaskResultService;
-import pl.lodz.p.liceum.matura.domain.result.TestResult;
-import pl.lodz.p.liceum.matura.domain.result.Verdict;
-import pl.lodz.p.liceum.matura.domain.subtask.Subtask;
+import pl.lodz.p.liceum.matura.domain.result.*;
 import pl.lodz.p.liceum.matura.domain.task.Task;
 import pl.lodz.p.liceum.matura.domain.task.TaskState;
 import pl.lodz.p.liceum.matura.domain.template.Template;
@@ -29,6 +25,7 @@ public class KafkaConsumer {
 
     private final TaskEventMapper taskEventMapper;
     private final SubtaskResultService subtaskResultService;
+    private final TestResultService testResultService;
     private final TemplateService templateService;
     private final TaskApplicationService taskService;
     private final Clock clock;
@@ -56,13 +53,23 @@ public class KafkaConsumer {
             int score = getScore(event.getTestResults());
             log.info(String.format("Score: %d", score));
             SubtaskResult subtaskResult = new SubtaskResult(null, event.getSubmissionId(), event.getNumber(), "", score, ZonedDateTime.now(clock));
-            subtaskResultService.save(subtaskResult);
+            subtaskResult = subtaskResultService.save(subtaskResult);
+            for (TestResult testResult : event.getTestResults()) {
+                testResult.setSubtaskResultId(subtaskResult.getId());
+                testResult.setCreatedAt(ZonedDateTime.now(clock));
+                testResultService.save(testResult);
+            }
         } else if (taskEvent instanceof SubtaskFullProcessingCompleteEvent event) {
             log.info(String.format("Full processing of subtask %s completed successfully", event.getNumber()));
             int score = getScore(event.getTestResults());
             log.info(String.format("Score: %d", score));
             SubtaskResult subtaskResult = new SubtaskResult(null, event.getSubmissionId(), event.getNumber(), "", score, ZonedDateTime.now(clock));
-            subtaskResultService.save(subtaskResult);
+            subtaskResult = subtaskResultService.save(subtaskResult);
+            for (TestResult testResult : event.getTestResults()) {
+                testResult.setSubtaskResultId(subtaskResult.getId());
+                testResult.setCreatedAt(ZonedDateTime.now(clock));
+                testResultService.save(testResult);
+            }
         } else if (taskEvent instanceof TaskProcessingFailedEvent) {
             Task task = taskEventMapper.toDomain(taskEvent);
             log.info("Processing of task failed at " + task.getWorkspaceUrl());
