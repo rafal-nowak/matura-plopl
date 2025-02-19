@@ -15,13 +15,13 @@ import java.time.ZonedDateTime;
 public class SubtaskResultEntity {
     @Id
     @SequenceGenerator(
-            name = "result_id_seq",
-            sequenceName = "result_id_seq",
+            name = "subtask_result_id_seq",
+            sequenceName = "subtask_result_id_seq",
             allocationSize = 1
     )
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "result_id_seq"
+            generator = "subtask_result_id_seq"
     )
     private Integer id;
 
