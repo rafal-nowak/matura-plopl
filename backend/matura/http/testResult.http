@@ -12,14 +12,8 @@ Content-Type: application/json
     client.global.set("auth_token", "Bearer " + response.body.token);
 %}
 
-### get subtaskResult by id
-GET http://localhost:8080/api/v1/subtaskResults/1
-Accept: application/json
-Content-Type: application/json
-Authorization: {{auth_token}}
-
-### get testResult by subtaskResult id
-GET http://localhost:8080/api/v1/subtaskResults/1/testResults
+### get testResult by id
+GET http://localhost:8080/api/v1/testResults/1
 Accept: application/json
 Content-Type: application/json
 Authorization: {{auth_token}}

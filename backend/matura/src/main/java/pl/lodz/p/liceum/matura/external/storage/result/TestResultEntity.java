@@ -16,13 +16,13 @@ import java.time.ZonedDateTime;
 public class TestResultEntity {
     @Id
     @SequenceGenerator(
-            name = "result_id_seq",
-            sequenceName = "result_id_seq",
+            name = "test_result_id_seq",
+            sequenceName = "test_result_id_seq",
             allocationSize = 1
     )
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "result_id_seq"
+            generator = "test_result_id_seq"
     )
     private Integer id;
 
@@ -30,11 +30,11 @@ public class TestResultEntity {
     private Integer subtaskResultId;
     @Column(name="verdict", nullable = false)
     private Verdict verdict;
-    @Column(name="time", nullable = false)
+    @Column(name="time", nullable = true)
     private Integer time;
-    @Column(name="memory", nullable = false)
+    @Column(name="memory", nullable = true)
     private Integer memory;
-    @Column(name="message", nullable = false, columnDefinition = "TEXT")
+    @Column(name="message", nullable = true, columnDefinition = "TEXT")
     private String message;
     @Column(name="created_at", nullable = false)
     private ZonedDateTime createdAt;

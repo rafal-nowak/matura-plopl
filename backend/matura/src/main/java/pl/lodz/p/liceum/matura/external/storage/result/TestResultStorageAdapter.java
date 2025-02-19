@@ -21,7 +21,6 @@ public class TestResultStorageAdapter implements TestResultRepository {
     @Override
     public TestResult save(final TestResult testResult) {
         try {
-            var a = mapper.toEntity(testResult);
             TestResultEntity saved = repository.save(mapper.toEntity(testResult));
             log.info("Saved entity " + saved);
             return mapper.toDomain(saved);

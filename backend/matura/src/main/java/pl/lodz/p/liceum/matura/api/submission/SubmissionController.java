@@ -21,7 +21,7 @@ public class SubmissionController {
     private final SubmissionService submissionService;
     private final SubmissionDtoMapper submissionMapper;
     private final SubtaskResultService subtaskResultService;
-    private final SubtaskResultDtoMapper resultMapper;
+    private final SubtaskResultDtoMapper subtaskResultMapper;
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<SubmissionDto> getSubmission(@PathVariable Integer id) {
@@ -29,12 +29,12 @@ public class SubmissionController {
         return ResponseEntity.ok(submissionMapper.toDto(submission));
     }
 
-    @GetMapping(path = "/{id}/results")
+    @GetMapping(path = "/{id}/subtaskResults")
     public ResponseEntity<List<SubtaskResultDto>> getResults(@PathVariable Integer id) {
         List<SubtaskResult> subtaskResults = subtaskResultService.findBySubmissionId(id);
         return ResponseEntity.ok(
                 subtaskResults.stream()
-                        .map(resultMapper::toDto)
+                        .map(subtaskResultMapper::toDto)
                         .toList());
     }
 }
