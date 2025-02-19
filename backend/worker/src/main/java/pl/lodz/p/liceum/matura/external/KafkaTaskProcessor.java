@@ -28,22 +28,22 @@ public class KafkaTaskProcessor {
         if (taskEvent instanceof TaskSentForProcessingEvent taskSentForProcessingEvent) {
             log.info("Received TaskSentForProcessingEvent: " + taskEvent);
 
-//            Task task = new Task(taskEvent.getTaskId(), taskEvent.getWorkspaceUrl());
-//
-//            for (int i = 1; i <= taskSentForProcessingEvent.getNumberOfSubtasks(); i++) {
-//                Subtask subtask = new Subtask(taskEvent.getWorkspaceUrl(), i, TestType.FULL);
-//                TestResult testResult = taskExecutor.executeSubtask(subtask);
-//
-//                kafkaTemplate.send(
-//                        kafkaProperties.getReportTopic(),
-//                        new SubtaskFullProcessingCompleteEvent(taskEvent.getTaskId(), taskSentForProcessingEvent.getSubmissionId(), subtask.getWorkspaceUrl(), subtask.getNumber(), testResult.getScore(), testResult.getDescription())
-//                );
-//            }
-//
-//            kafkaTemplate.send(
-//                    kafkaProperties.getReportTopic(),
-//                    new TaskProcessingCompleteEvent(task.getTaskId(), taskSentForProcessingEvent.getSubmissionId(), task.getWorkspaceUrl())
-//            );
+            Task task = new Task(taskEvent.getTaskId(), taskEvent.getWorkspaceUrl());
+
+            for (int i = 1; i <= taskSentForProcessingEvent.getNumberOfSubtasks(); i++) {
+                Subtask subtask = new Subtask(taskEvent.getWorkspaceUrl(), i, TestType.FULL);
+                List<TestResult> testResults = taskExecutor.executeSubtask(subtask);
+
+                kafkaTemplate.send(
+                        kafkaProperties.getReportTopic(),
+                        new SubtaskFullProcessingCompleteEvent(taskEvent.getTaskId(), taskSentForProcessingEvent.getSubmissionId(), subtask.getWorkspaceUrl(), subtask.getNumber(), testResults)
+                );
+            }
+
+            kafkaTemplate.send(
+                    kafkaProperties.getReportTopic(),
+                    new TaskProcessingCompleteEvent(task.getTaskId(), taskSentForProcessingEvent.getSubmissionId(), task.getWorkspaceUrl())
+            );
 
         } else if (taskEvent instanceof SubtaskSentForFastProcessingEvent subtaskSentForFastProcessingEvent) {
             log.info("Received SubtaskSentForFastProcessingEvent: " + taskEvent);
