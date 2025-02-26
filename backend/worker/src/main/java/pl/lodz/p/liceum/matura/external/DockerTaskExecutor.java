@@ -12,6 +12,7 @@ import pl.lodz.p.liceum.matura.external.worker.task.TaskDefinitionParser;
 import pl.lodz.p.liceum.matura.external.worker.task.definition.CheckData;
 import pl.lodz.p.liceum.matura.external.worker.task.definition.SubtaskDefinition;
 import pl.lodz.p.liceum.matura.external.worker.task.definition.TaskDefinition;
+import pl.lodz.p.liceum.matura.external.worker.task.definition.TaskLimits;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -33,7 +34,7 @@ public class DockerTaskExecutor implements TaskExecutor {
     private final TaskDefinitionParser taskDefinitionParser;
     private final DockerComposeGenerator dockerComposeGenerator;
 
-    private boolean execute(Task task, TestResult testResult) {
+    private boolean execute(Task task, TaskLimits limits, TestResult testResult) {
         Process process = null;
         try {
             StringBuilder outputLogs = new StringBuilder();
@@ -76,8 +77,8 @@ public class DockerTaskExecutor implements TaskExecutor {
             String containerName = matcher.group(1);
             System.out.println("Container name: " + containerName);
 
-            var inspectCommad = "docker inspect " + containerName;
-            Process inspectProcess = getRuntime().exec(inspectCommad);
+            var inspectCommand = "docker inspect " + containerName;
+            Process inspectProcess = getRuntime().exec(inspectCommand);
             StringBuilder inspectResult = new StringBuilder();
             StreamGobbler inspectGobbler = new StreamGobbler(inspectProcess.getInputStream(), inspectResult::append);
             inspectGobbler.start();
@@ -110,14 +111,51 @@ public class DockerTaskExecutor implements TaskExecutor {
                 return false;
             }
             if (inspectExitCode != 0) {
-                testResult.setVerdict(Verdict.RUNTIME_ERROR);
-                testResult.setMessage("Process exited with code " + inspectExitCode);
+                testResult.setVerdict(Verdict.SYSTEM_ERROR);
+                log.warning("System process exited with code " + inspectExitCode);
                 return false;
             }
 
+            Path sio2jailOutputPath = Paths.get(task.getWorkspaceUrl(), "sio2jail_output.txt");
+            String sio2jailVerdict = Files.readString(sio2jailOutputPath);
+            var sio2jailLine = sio2jailVerdict.split("\n")[0];
+            var sio2jailValues = sio2jailVerdict.split(" ");
+            String verdict = sio2jailValues[0];
+            int userExitCode = Integer.parseInt(sio2jailValues[1]);
+            int time = Integer.parseInt(sio2jailValues[2]);
+            int memory = Integer.parseInt(sio2jailValues[4]);
+
+            if (verdict.equalsIgnoreCase("TLE")) {
+                testResult.setVerdict(Verdict.TIME_LIMIT_EXCEEDED);
+                return false;
+            } else if (verdict.equalsIgnoreCase("MLE")) {
+                testResult.setVerdict(Verdict.MEMORY_LIMIT_EXCEEDED);
+                return false;
+            } else if (verdict.equalsIgnoreCase("RE")) {
+                testResult.setVerdict(Verdict.RUNTIME_ERROR);
+                testResult.setMessage("Process exited with code " + userExitCode);
+                return false;
+            } else if (!verdict.equalsIgnoreCase("OK")) {
+                testResult.setVerdict(Verdict.SYSTEM_ERROR);
+                log.warning("Verdict " + verdict + " not supported");
+                return false;
+            }
+
+            if (time > limits.getTime()) {
+                testResult.setVerdict(Verdict.TIME_LIMIT_EXCEEDED);
+                return false;
+            }
+            if (memory > limits.getMemory()) {
+                testResult.setVerdict(Verdict.MEMORY_LIMIT_EXCEEDED);
+                return false;
+            }
+
+            testResult.setTime(time);
+            testResult.setMemory(memory);
+
             return true;
         } catch (InterruptedException | IOException exception) {
-            log.info("Exception during execution: " + exception);
+            log.warning("Exception during execution: " + exception);
             testResult.setVerdict(Verdict.SYSTEM_ERROR);
             return false;
         } finally {
@@ -147,8 +185,10 @@ public class DockerTaskExecutor implements TaskExecutor {
             var userOutput = Files.readAllLines(userOutputFile);
             var expectedOutput = Files.readAllLines(expectedOutputFile);
 
-            if (!userOutput.isEmpty() && userOutput.get(userOutput.size() - 1).isEmpty()) userOutput.remove(userOutput.size() - 1);
-            if (!expectedOutput.isEmpty() && expectedOutput.get(expectedOutput.size() - 1).isEmpty()) expectedOutput.remove(expectedOutput.size() - 1);
+            if (!userOutput.isEmpty() && userOutput.get(userOutput.size() - 1).isEmpty())
+                userOutput.remove(userOutput.size() - 1);
+            if (!expectedOutput.isEmpty() && expectedOutput.get(expectedOutput.size() - 1).isEmpty())
+                expectedOutput.remove(expectedOutput.size() - 1);
 
             for (int i = 0; i < Math.max(userOutput.size(), expectedOutput.size()); i++) {
                 if (i >= userOutput.size()) {
@@ -230,7 +270,7 @@ public class DockerTaskExecutor implements TaskExecutor {
                 log.info("Failed to copy input file: " + inputFile.getName());
                 continue;
             }
-            if (execute(subtask, testResult)) {
+            if (execute(subtask, taskDefinition.getLimits(), testResult)) {
                 Path userOutputFile = Paths.get(subtask.getWorkspaceUrl(), Path.of(taskDefinition.getSourceFile()).getParent().toString(), subtaskDefinition.getUserOutputFilename());
                 if (checkAnswer(userOutputFile, outputFilePath, testResult))
                     testResult.setVerdict(Verdict.ACCEPTED);

@@ -20,10 +20,11 @@ public class DockerComposeGenerator {
         String template = """
                 services:
                   env:
-                    image: python:3.8-alpine
+                    image: python:3.8-bookworm
                     command: [ "sh", "-c", '
                         cd code/src;
-                        python3 -c "import task; task.%s()"
+                        chmod +x ../sio2jail;
+                        ../sio2jail -f 3 -o oiaug --mount-namespace off --pid-namespace off --uts-namespace off --ipc-namespace off --net-namespace off --capability-drop off --user-namespace off -s -p permissive -m %dK -- /usr/bin/python3 -c "import task; task.%s()" 3> ../sio2jail_output.txt
                       ' ]
                     volumes:
                       - .:/code
@@ -31,6 +32,6 @@ public class DockerComposeGenerator {
                     ulimits:
                       cpu: %s         # 5 - Maksymalnie 5 sekundy czasu CPU
                 """;
-        return String.format(template, subtaskDefinition.getTestedFunctionName(), limits.getMemory(), limits.getTime());
+        return String.format(template, limits.getMemory(), subtaskDefinition.getTestedFunctionName(), limits.getMemory() * 2 + 50000 + "kb", (int) Math.ceil(limits.getTime() * 2 / 1000d) + 5);
     }
 }
