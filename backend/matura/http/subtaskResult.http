@@ -19,7 +19,7 @@ Content-Type: application/json
 Authorization: {{auth_token}}
 
 ### get testResult by subtaskResult id
-GET http://localhost:8080/api/v1/subtaskResults/1/testResults
+GET http://localhost:8080/api/v1/subtaskResults/4/testResults
 Accept: application/json
 Content-Type: application/json
 Authorization: {{auth_token}}

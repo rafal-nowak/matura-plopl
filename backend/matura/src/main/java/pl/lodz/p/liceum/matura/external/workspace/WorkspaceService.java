@@ -9,13 +9,14 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.springframework.beans.factory.annotation.Value;
-import pl.lodz.p.liceum.matura.domain.workspace.FileWasNotFoundException;
-import pl.lodz.p.liceum.matura.domain.workspace.RepositoryAlreadyResidesInDestinationFolderException;
-import pl.lodz.p.liceum.matura.domain.workspace.RepositoryWasNotFoundException;
-import pl.lodz.p.liceum.matura.domain.workspace.Workspace;
+import pl.lodz.p.liceum.matura.domain.workspace.*;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,8 +34,10 @@ public class WorkspaceService implements Workspace {
     public String createWorkspace(String sourceRepositoryUrl) {
         String absoluteDestinationPath = crateDirectoryPath();
         cloneRepository(sourceRepositoryUrl, absoluteDestinationPath);
+        DownloadSio2Jail(absoluteDestinationPath + "/sio2jail");
         return absoluteDestinationPath;
     }
+
     private boolean deleteFile(File file) {
         File[] contents = file.listFiles();
         if (contents != null) {
@@ -49,6 +52,7 @@ public class WorkspaceService implements Workspace {
         }
         return true;
     }
+
     @Override
     public void deleteWorkspace(String rootPathUrl) {
         if (!deleteFile(new File(rootPathUrl)))
@@ -141,5 +145,16 @@ public class WorkspaceService implements Workspace {
         }
         unlinkRemotes(git);
         git.close();
+    }
+
+    private void DownloadSio2Jail(String destinationPath) {
+        try (FileOutputStream fos = new FileOutputStream(destinationPath)) {
+            String sio2jailDownloadUrl = "https://github.com/sio2project/sio2jail/releases/download/v1.5.0/sio2jail";
+            URL url = new URL(sio2jailDownloadUrl);
+            ReadableByteChannel rbc = Channels.newChannel(url.openStream());
+            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        } catch (IOException e) {
+            throw new Sio2JailCouldNotBeDownloadedException();
+        }
     }
 }
