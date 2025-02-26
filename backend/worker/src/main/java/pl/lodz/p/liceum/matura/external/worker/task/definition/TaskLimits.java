@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class TaskLimits {
-    String time;
-    String memory;
+    Integer time;
+    Integer memory;
 }
