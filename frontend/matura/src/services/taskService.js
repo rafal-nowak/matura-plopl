@@ -2,6 +2,7 @@ import axios from "axios";
 import {User} from "./userService.js";
 import {Template} from "./templateService.js";
 import {SubtaskResult} from "./subtaskResultService.js";
+import {TestResult} from "./testResultService.js";
 
 const API = `${import.meta.env.VITE_API_URL}/v1`;
 
@@ -50,7 +51,8 @@ export class Task {
             )
 
             return responseTask.data['id']
-        } catch (e) { /* empty */ }
+        } catch (e) { /* empty */
+        }
 
         const response = await axios.post(
             `${API}/tasks`,
@@ -119,6 +121,8 @@ export class Task {
             User.fromLocalStorage().getAuthHeader()
         );
 
+        let results = [];
+
         await new Promise(resolve => {
             const timeout = setInterval(async () => {
                 const taskData = (await axios.get(
@@ -127,14 +131,22 @@ export class Task {
                 )).data;
 
                 if (taskData['state'] !== 'PROCESSING') {
+                    const subtaskResults = await SubtaskResult.getBySubmissionId(submission.data['id']);
+
+                    for (const subtaskResult of subtaskResults) {
+                        const testResults = await TestResult.getBySubtaskResultId(subtaskResult.id);
+                        results.push([subtaskResult, testResults]);
+                    }
+
                     clearInterval(timeout);
                     resolve();
                 }
             }, 2000);
         });
 
+
         // console.log(submission.data)
-        return submission.data['id'];
+        return results;
     }
 
     /**
@@ -152,15 +164,18 @@ export class Task {
             User.fromLocalStorage().getAuthHeader()
         )
         const submissionId = submission.data['id'];
-        let results = null
+        let subtaskResults = null
+        let testResults = null
 
         // Wait until there is a result for this submission
         await new Promise(resolve => {
             const timeout = setInterval(async () => {
                 const res = await SubtaskResult.getBySubmissionId(submissionId);
 
-                if(res.length === 1) {
-                    results = res;
+                if (res.length === 1) {
+                    subtaskResults = res;
+
+                    testResults = await TestResult.getBySubtaskResultId(subtaskResults[0].id);
 
                     clearInterval(timeout);
                     resolve();
@@ -169,7 +184,7 @@ export class Task {
             }, 2000);
         });
 
-        return results[0]
+        return [subtaskResults[0], testResults];
     }
 }
 
