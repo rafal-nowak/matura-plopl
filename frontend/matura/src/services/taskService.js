@@ -1,7 +1,7 @@
 import axios from "axios";
 import {User} from "./userService.js";
 import {Template} from "./templateService.js";
-import {Result} from "./resultService.js";
+import {SubtaskResult} from "./subtaskResultService.js";
 
 const API = `${import.meta.env.VITE_API_URL}/v1`;
 
@@ -157,7 +157,7 @@ export class Task {
         // Wait until there is a result for this submission
         await new Promise(resolve => {
             const timeout = setInterval(async () => {
-                const res = await Result.getBySubmissionId(submissionId);
+                const res = await SubtaskResult.getBySubmissionId(submissionId);
 
                 if(res.length === 1) {
                     results = res;

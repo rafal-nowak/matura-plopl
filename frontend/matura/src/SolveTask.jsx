@@ -19,7 +19,7 @@ import {
 import {Task} from "./services/taskService.js";
 import {CodeEditor} from "./components/CodeEditor.jsx";
 import {RenderMarkdown} from "./components/RenderMarkdown.jsx";
-import {Result} from "./services/resultService.js";
+import {SubtaskResult} from "./services/subtaskResultService.js";
 import * as PropTypes from "prop-types";
 import {LoadingCard} from "./components/LoadingCard.jsx";
 
@@ -49,18 +49,18 @@ const SubtaskResultBody = ({result}) => (
     <VStack align='start'>
         <Text as='b' mb='5px'>Wynik: {result.score}% testów zaliczono</Text>
         <Text>Testy:</Text>
-        <UnorderedList>
-            {result.getParsedDescription().map((test, index) => (
-                <ListItem key={test.id}>
-                    <Text>Test {index + 1}: {test.passed === true? 'Zaliczony' : 'Niezaliczony'}</Text>
-                    <Text>Czas wykonania: {test.time}s</Text>
-                </ListItem>
-            ))}
-        </UnorderedList>
+        {/*<UnorderedList>*/}
+        {/*    {result.getParsedDescription().map((test, index) => (*/}
+        {/*        <ListItem key={test.id}>*/}
+        {/*            <Text>Test {index + 1}: {test.passed === true? 'Zaliczony' : 'Niezaliczony'}</Text>*/}
+        {/*            <Text>Czas wykonania: {test.time}s</Text>*/}
+        {/*        </ListItem>*/}
+        {/*    ))}*/}
+        {/*</UnorderedList>*/}
     </VStack>
 )
 SubtaskResultBody.propTypes = {
-    result: PropTypes.instanceOf(Result)
+    result: PropTypes.instanceOf(SubtaskResult)
 }
 
 const TaskResultBody = ({results}) => (
@@ -74,21 +74,21 @@ const TaskResultBody = ({results}) => (
                 <Text as='b'>Podzadanie {idx + 1}: {result.score}%</Text>
 
                 <Text>Testy:</Text>
-                <UnorderedList>
-                    {result.getParsedDescription().map((test, index) => (
-                        <ListItem key={test.id}>
-                            <Text>Test {index + 1}: {test.passed === true ? 'Zaliczony' : 'Niezaliczony'}</Text>
-                            <Text>Czas wykonania: {test.time}s</Text>
-                        </ListItem>
-                    ))}
-                </UnorderedList>
+                {/*<UnorderedList>*/}
+                {/*    {result.getParsedDescription().map((test, index) => (*/}
+                {/*        <ListItem key={test.id}>*/}
+                {/*            <Text>Test {index + 1}: {test.passed === true ? 'Zaliczony' : 'Niezaliczony'}</Text>*/}
+                {/*            <Text>Czas wykonania: {test.time}s</Text>*/}
+                {/*        </ListItem>*/}
+                {/*    ))}*/}
+                {/*</UnorderedList>*/}
             </div>
         ))}
 
     </VStack>
 )
 TaskResultBody.propTypes = {
-    results: PropTypes.arrayOf(Result)
+    results: PropTypes.arrayOf(SubtaskResult)
 }
 
 const SolveTask = () => {
@@ -267,7 +267,7 @@ const SolveTask = () => {
 
                                     //TODO show some feedback
                                     promise.then(submission => {
-                                        Result.getBySubmissionId(submission)
+                                        SubtaskResult.getBySubmissionId(submission)
                                             .then((results) => {
                                                 setTestName('Sprawdzenie pełne')
                                                 setTestResultsBody(<TaskResultBody results={results}/>)
