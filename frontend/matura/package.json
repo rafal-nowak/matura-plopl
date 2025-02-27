@@ -20,6 +20,7 @@
     "framer-motion": "^12.4.7",
     "localforage": "^1.10.0",
     "match-sorter": "^8.0.0",
+    "monaco-editor": "^0.52.2",
     "monaco-editor-webpack-plugin": "^7.1.0",
     "monaco-languageclient": "^9.4.0",
     "postcss": "^8.5.3",
@@ -31,7 +32,11 @@
     "react-error-boundary": "^5.0.0",
     "react-markdown": "^10.0.0",
     "react-router-dom": "^7.2.0",
+    "react-use-websocket": "^4.13.0",
+    "uuid": "^11.1.0",
+    "vscode-jsonrpc": "^8.2.1",
     "vscode-languageclient": "^9.0.1",
+    "vscode-ws-jsonrpc": "^3.4.0",
     "yup": "^1.6.1"
   },
   "devDependencies": {
