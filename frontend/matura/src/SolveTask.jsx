@@ -22,6 +22,7 @@ import {RenderMarkdown} from "./components/RenderMarkdown.jsx";
 import {SubtaskResult} from "./services/subtaskResultService.js";
 import * as PropTypes from "prop-types";
 import {LoadingCard} from "./components/LoadingCard.jsx";
+import {TestResult} from "./services/testResultService.js";
 
 const CheckSubtaskMenuItem = ({subtaskNumber, onFastCheck, onFullCheck}) => (
     <div>
@@ -45,50 +46,57 @@ CheckSubtaskMenuItem.propTypes = {
     onFullCheck: PropTypes.func
 }
 
-const SubtaskResultBody = ({result}) => (
+const SubtaskResultBody = ({result, testResults}) => (
     <VStack align='start'>
         <Text as='b' mb='5px'>Wynik: {result.score}% testów zaliczono</Text>
         <Text>Testy:</Text>
-        {/*<UnorderedList>*/}
-        {/*    {result.getParsedDescription().map((test, index) => (*/}
-        {/*        <ListItem key={test.id}>*/}
-        {/*            <Text>Test {index + 1}: {test.passed === true? 'Zaliczony' : 'Niezaliczony'}</Text>*/}
-        {/*            <Text>Czas wykonania: {test.time}s</Text>*/}
-        {/*        </ListItem>*/}
-        {/*    ))}*/}
-        {/*</UnorderedList>*/}
+        <UnorderedList>
+            {testResults.map((testResult, index) => (
+                <ListItem key={testResult.id}>
+                    <Text>Test {index + 1}: {testResult.verdict === 'ACCEPTED'? 'Zaliczony' : 'Niezaliczony'}</Text>
+                    <Text>Werdykt: {testResult.verdict}</Text>
+                    <Text>Czas wykonania: {testResult.time / 1000}s</Text>
+                    <Text>Zużyta pamięć: {testResult.memory / 1024}Mb</Text>
+                    <Text>{testResult.message}</Text>
+                </ListItem>
+            ))}
+        </UnorderedList>
     </VStack>
 )
 SubtaskResultBody.propTypes = {
-    result: PropTypes.instanceOf(SubtaskResult)
+    result: PropTypes.instanceOf(SubtaskResult),
+    testResults: PropTypes.arrayOf(TestResult)
 }
 
 const TaskResultBody = ({results}) => (
     <VStack align='start'>
         <Text as='b' mb='5px'>Wynik: {Math.floor(
-            results.reduce((sum, result) => sum + result.score, 0) / results.length
+            results.reduce((sum, result) => sum + result[0].score, 0) / results.length
         )}% testów zaliczono</Text>
 
         {results.map((result, idx) => (
             <div key={idx}>
-                <Text as='b'>Podzadanie {idx + 1}: {result.score}%</Text>
+                <Text as='b'>Podzadanie {idx + 1}: {result[0].score}%</Text>
 
                 <Text>Testy:</Text>
-                {/*<UnorderedList>*/}
-                {/*    {result.getParsedDescription().map((test, index) => (*/}
-                {/*        <ListItem key={test.id}>*/}
-                {/*            <Text>Test {index + 1}: {test.passed === true ? 'Zaliczony' : 'Niezaliczony'}</Text>*/}
-                {/*            <Text>Czas wykonania: {test.time}s</Text>*/}
-                {/*        </ListItem>*/}
-                {/*    ))}*/}
-                {/*</UnorderedList>*/}
+                <UnorderedList>
+                    {result[1].map((testResult, index) => (
+                        <ListItem key={testResult.id}>
+                            <Text>Test {index + 1}: {testResult.verdict === 'ACCEPTED'? 'Zaliczony' : 'Niezaliczony'}</Text>
+                            <Text>Werdykt: {testResult.verdict}</Text>
+                            <Text>Czas wykonania: {testResult.time / 1000}s</Text>
+                            <Text>Zużyta pamięć: {testResult.memory / 1024}Mb</Text>
+                            <Text>{testResult.message}</Text>
+                        </ListItem>
+                    ))}
+                </UnorderedList>
             </div>
         ))}
 
     </VStack>
 )
 TaskResultBody.propTypes = {
-    results: PropTypes.arrayOf(SubtaskResult)
+    results: PropTypes.arrayOf(PropTypes.shape({subtaskResult: PropTypes.instanceOf(SubtaskResult), testResults: PropTypes.arrayOf(TestResult)}))
 }
 
 const SolveTask = () => {
@@ -158,7 +166,7 @@ const SolveTask = () => {
 
                     promise.then(result => {
                         setTestName(`Szybkie sprawdzenie podzadania ${i}`)
-                        setTestResultsBody(<SubtaskResultBody result={result}/>)
+                        setTestResultsBody(<SubtaskResultBody result={result[0]} testResults={result[1]} />)
                         modalOpen()
                     })
                 }} onFullCheck={() => {
@@ -181,7 +189,7 @@ const SolveTask = () => {
 
                     promise.then(result => {
                         setTestName(`Pełne sprawdzenie podzadania ${i}`)
-                        setTestResultsBody(<SubtaskResultBody result={result}/>)
+                        setTestResultsBody(<SubtaskResultBody result={result[0]} testResults={result[1]} />)
                         modalOpen()
                     })
                 }}/>
@@ -266,13 +274,10 @@ const SolveTask = () => {
                                     })
 
                                     //TODO show some feedback
-                                    promise.then(submission => {
-                                        SubtaskResult.getBySubmissionId(submission)
-                                            .then((results) => {
-                                                setTestName('Sprawdzenie pełne')
-                                                setTestResultsBody(<TaskResultBody results={results}/>)
-                                                modalOpen()
-                                            })
+                                    promise.then(results => {
+                                        setTestName('Sprawdzenie pełne')
+                                        setTestResultsBody(<TaskResultBody results={results}/>)
+                                        modalOpen()
                                     })
                                 }}>
                                     <i className="fa-fw fa-solid fa-check"/>
