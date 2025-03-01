@@ -57,7 +57,7 @@ const SubtaskResultBody = ({result, testResults}) => (
                     <Text>Werdykt: {testResult.verdict}</Text>
                     <Text>Czas wykonania: {testResult.time / 1000}s</Text>
                     <Text>Zużyta pamięć: {testResult.memory / 1024}Mb</Text>
-                    <Text>{testResult.message}</Text>
+                    <Text whiteSpace="pre-line">{testResult.message}</Text>
                 </ListItem>
             ))}
         </UnorderedList>
@@ -86,7 +86,7 @@ const TaskResultBody = ({results}) => (
                             <Text>Werdykt: {testResult.verdict}</Text>
                             <Text>Czas wykonania: {testResult.time / 1000}s</Text>
                             <Text>Zużyta pamięć: {testResult.memory / 1024}Mb</Text>
-                            <Text>{testResult.message}</Text>
+                            <Text whiteSpace="pre-line">{testResult.message}</Text>
                         </ListItem>
                     ))}
                 </UnorderedList>
