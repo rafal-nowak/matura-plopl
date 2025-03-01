@@ -20,9 +20,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.lang.Runtime.getRuntime;
 
@@ -103,11 +105,13 @@ public class DockerTaskExecutor implements TaskExecutor {
             log.info("ExitCode: " + inspectExitCode);
 
             if (oomKilled) {
-                testResult.setVerdict(Verdict.MEMORY_LIMIT_EXCEEDED);
+                testResult.setVerdict(Verdict.SYSTEM_ERROR);
+                log.warning("System memory ran out too soon");
                 return false;
             }
             if (inspectExitCode == 137) {
-                testResult.setVerdict(Verdict.TIME_LIMIT_EXCEEDED);
+                testResult.setVerdict(Verdict.SYSTEM_ERROR);
+                log.warning("System time ran out too soon");
                 return false;
             }
             if (inspectExitCode != 0) {
@@ -119,11 +123,14 @@ public class DockerTaskExecutor implements TaskExecutor {
             Path sio2jailOutputPath = Paths.get(task.getWorkspaceUrl(), "sio2jail_output.txt");
             String sio2jailVerdict = Files.readString(sio2jailOutputPath);
             var sio2jailLine = sio2jailVerdict.split("\n")[0];
-            var sio2jailValues = sio2jailVerdict.split(" ");
+            var sio2jailValues = sio2jailLine.split(" ");
             String verdict = sio2jailValues[0];
             int userExitCode = Integer.parseInt(sio2jailValues[1]);
             int time = Integer.parseInt(sio2jailValues[2]);
             int memory = Integer.parseInt(sio2jailValues[4]);
+
+            testResult.setTime(time);
+            testResult.setMemory(memory);
 
             if (verdict.equalsIgnoreCase("TLE")) {
                 testResult.setVerdict(Verdict.TIME_LIMIT_EXCEEDED);
@@ -133,25 +140,15 @@ public class DockerTaskExecutor implements TaskExecutor {
                 return false;
             } else if (verdict.equalsIgnoreCase("RE")) {
                 testResult.setVerdict(Verdict.RUNTIME_ERROR);
-                testResult.setMessage("Process exited with code " + userExitCode);
+                String message = "Process exited with code " + userExitCode + "\n"
+                        + readStandardError(errorLogs.toString());
+                testResult.setMessage(message);
                 return false;
             } else if (!verdict.equalsIgnoreCase("OK")) {
                 testResult.setVerdict(Verdict.SYSTEM_ERROR);
                 log.warning("Verdict " + verdict + " not supported");
                 return false;
             }
-
-            if (time > limits.getTime()) {
-                testResult.setVerdict(Verdict.TIME_LIMIT_EXCEEDED);
-                return false;
-            }
-            if (memory > limits.getMemory()) {
-                testResult.setVerdict(Verdict.MEMORY_LIMIT_EXCEEDED);
-                return false;
-            }
-
-            testResult.setTime(time);
-            testResult.setMemory(memory);
 
             return true;
         } catch (InterruptedException | IOException exception) {
@@ -172,6 +169,13 @@ public class DockerTaskExecutor implements TaskExecutor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String readStandardError(String errorLogs) {
+        return Arrays.stream(errorLogs.split("\n"))
+                .filter(s -> s.contains("env-1  | "))
+                .map(s -> s.substring(9))
+                .collect(Collectors.joining("\n"));
     }
 
     private boolean checkAnswer(Path userOutputFile, Path expectedOutputFile, TestResult testResult) {
