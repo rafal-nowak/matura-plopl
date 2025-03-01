@@ -24,7 +24,7 @@ public class DockerComposeGenerator {
                     command: [ "sh", "-c", '
                         cd code/src;
                         chmod +x ../sio2jail;
-                        ../sio2jail -f 3 -o oiaug --mount-namespace off --pid-namespace off --uts-namespace off --ipc-namespace off --net-namespace off --capability-drop off --user-namespace off -s -p permissive -m %dK --instruction-count-limit %dm -- /usr/bin/python3 -c "import task; task.%s()" 3> ../sio2jail_output.txt
+                        ../sio2jail -f 3 -o oiaug --mount-namespace off --pid-namespace off --uts-namespace off --ipc-namespace off --net-namespace off --capability-drop off --user-namespace off -s -m %dK --instruction-count-limit %dm -- /usr/bin/python3 -c "import task; task.%s()" 3> ../sio2jail_output.txt
                       ' ]
                     volumes:
                       - .:/code
