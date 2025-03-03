@@ -276,8 +276,19 @@ public class DockerTaskExecutor implements TaskExecutor {
             }
             if (execute(subtask, taskDefinition.getLimits(), testResult)) {
                 Path userOutputFile = Paths.get(subtask.getWorkspaceUrl(), Path.of(taskDefinition.getSourceFile()).getParent().toString(), subtaskDefinition.getUserOutputFilename());
+                if (!Files.exists(userOutputFile)) {
+                    Path userStandardOutputPath = Paths.get(subtask.getWorkspaceUrl(), "user_standard_output.txt");
+                    if (!Files.exists(userStandardOutputPath)) {
+                        testResult.setVerdict(Verdict.SYSTEM_ERROR);
+                        results.add(testResult);
+                        log.info("No user standard output file found");
+                        continue;
+                    }
+                    userOutputFile = userStandardOutputPath;
+                }
                 if (checkAnswer(userOutputFile, outputFilePath, testResult))
                     testResult.setVerdict(Verdict.ACCEPTED);
+                userOutputFile = Paths.get(subtask.getWorkspaceUrl(), Path.of(taskDefinition.getSourceFile()).getParent().toString(), subtaskDefinition.getUserOutputFilename());
                 if (Files.exists(userOutputFile)) {
                     try {
                         Files.delete(userOutputFile);
