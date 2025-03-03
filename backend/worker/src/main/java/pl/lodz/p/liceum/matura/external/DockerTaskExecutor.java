@@ -278,6 +278,16 @@ public class DockerTaskExecutor implements TaskExecutor {
                 Path userOutputFile = Paths.get(subtask.getWorkspaceUrl(), Path.of(taskDefinition.getSourceFile()).getParent().toString(), subtaskDefinition.getUserOutputFilename());
                 if (checkAnswer(userOutputFile, outputFilePath, testResult))
                     testResult.setVerdict(Verdict.ACCEPTED);
+                if (Files.exists(userOutputFile)) {
+                    try {
+                        Files.delete(userOutputFile);
+                    } catch (IOException e) {
+                        testResult.setVerdict(Verdict.SYSTEM_ERROR);
+                        results.add(testResult);
+                        log.info("Failed to delete user output file: " + userOutputFile.toString());
+                        continue;
+                    }
+                }
             }
             results.add(testResult);
         }
