@@ -8,7 +8,7 @@ import * as monaco from "monaco-editor";
 export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
     const [isInitialized, setIsInitialized] = useState(false);
     const [editorInstance, setEditorInstance] = useState(null);
-    const { sendJsonMessage, lastJsonMessage } = useWebSocket("ws://localhost:7777", {
+    const { sendJsonMessage, lastJsonMessage } = useWebSocket("wss://test.lsp.it4u.app", {
         onOpen: () => {
             console.log("✅ Connected to PyLSP");
             initializeLsp();
