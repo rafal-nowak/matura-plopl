@@ -24,17 +24,13 @@ public class DockerComposeGenerator {
                     command: [ "sh", "-c", '
                         cd code/src;
                         chmod +x ../sio2jail;
-                        ../sio2jail -f 3 -o oiaug --mount-namespace off --pid-namespace off --uts-namespace off --ipc-namespace off --net-namespace off --capability-drop off --user-namespace off -s -m %dK --instruction-count-limit %dm -- /usr/bin/python3 -c "import task; task.%s()" 3> ../sio2jail_output.txt > ../user_standard_output.txt
+                        ../sio2jail -f 3 -o oiuser --perf off --mount-namespace off --pid-namespace off --uts-namespace off --ipc-namespace off --net-namespace off --capability-drop off --user-namespace off -s -m %dK --utimelimit %dms -- /usr/bin/python3 -c "import task; task.%s()" 3> ../sio2jail_output.txt > ../user_standard_output.txt
                       ' ]
                     volumes:
                       - .:/code
                     mem_limit: %s  # 6m - Ograniczenie pamięci do 6 MB
                     ulimits:
                       cpu: %s         # 5 - Maksymalnie 5 sekundy czasu CPU
-                    cap_add:
-                      - SYS_ADMIN
-                    security_opt:
-                      - seccomp:unconfined
                 """;
         return String.format(template, limits.getMemory(), limits.getTime() * 2, subtaskDefinition.getTestedFunctionName(), limits.getMemory() * 2 + 50000 + "kb", (int) Math.ceil(limits.getTime() * 2 / 1000d) + 5);
     }
