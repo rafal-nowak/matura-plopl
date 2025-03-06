@@ -1,28 +1,33 @@
-import { useState, useEffect } from "react";
-import { Editor } from "@monaco-editor/react";
+import {useState, useRef} from "react";
+import {Editor} from "@monaco-editor/react";
 import PropTypes from "prop-types";
 import useWebSocket from "react-use-websocket";
-import { v4 as uuidv4 } from "uuid";
-import * as monaco from "monaco-editor";
+import {v4 as uuidv4} from "uuid";
 
-export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
+export const CodeEditor = ({language, startingCode, onChangeCallback}) => {
     const [isInitialized, setIsInitialized] = useState(false);
     const [editorInstance, setEditorInstance] = useState(null);
-    const { sendJsonMessage, lastJsonMessage } = useWebSocket("wss://test.lsp.it4u.app", {
+    const completionProviderRegistered = useRef(false);  // Ref to track registration
+
+    const {sendJsonMessage, lastJsonMessage} = useWebSocket("wss://test.lsp.it4u.app", {
         onOpen: () => {
-            console.log("✅ Connected to PyLSP");
             initializeLsp();
+            console.log("✅ Connected to PyLSP");
         },
         onMessage: (event) => {
             const response = JSON.parse(event.data);
-            console.log("📥 Received:", response);
 
             if (response.id === "initialize") {
                 setIsInitialized(true);
             }
 
-            // Handle completion response
-            if (response.result?.items) {
+            if (Array.isArray(response.result.items)) {
+                // Clear previous completion items provider if registered
+                if (completionProviderRegistered.current) {
+                    monaco.languages.unregisterCompletionItemProvider("python");
+                }
+
+                // Register new completion items provider
                 monaco.languages.registerCompletionItemProvider("python", {
                     provideCompletionItems: () => ({
                         suggestions: response.result.items.map(item => ({
@@ -34,13 +39,18 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
                         }))
                     })
                 });
+
+                // Mark the provider as registered
+                completionProviderRegistered.current = true;
             }
 
             // Handle hover response
-            if (response.result?.contents) {
+            if (typeof response.result.contents === "string") {
+                console.log('docs')
+                console.log(response.result.contents);
                 monaco.languages.registerHoverProvider("python", {
                     provideHover: () => ({
-                        contents: [{ value: response.result.contents }]
+                        contents: [{value: response.result.contents}]
                     })
                 });
             }
@@ -57,16 +67,9 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
                 processId: null,
                 rootUri: null,
                 capabilities: {},
-                clientInfo: { name: "MonacoLSPClient", version: "1.0" },
+                clientInfo: {name: "MonacoLSPClient", version: "1.0"},
             },
         });
-
-        // sendJsonMessage({
-        //     jsonrpc: "2.0",
-        //     id: "initialized",
-        //     method: "initialized",
-        //     params: {},
-        // });
     };
 
     const handleEditorDidMount = (editor) => {
@@ -78,33 +81,33 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
             onChangeCallback(value);
         }
 
-        if (isInitialized) {
-            sendJsonMessage({
-                jsonrpc: "2.0",
-                id: uuidv4(),
-                method: "textDocument/completion",
-                params: {
-                    textDocument: {
-                        uri: "file://dummy.py",
-                        version: 1,
-                    },
-                    contentChanges: [{ text: value }],
-                },
-            });
+        if (!isInitialized) return;
 
-            // sendJsonMessage({
-            //     jsonrpc: "2.0",
-            //     id: uuidv4(),
-            //     method: "textDocument/hover",
-            //     params: {
-            //         textDocument: {
-            //             uri: "file://dummy.py",
-            //             version: 1,
-            //         },
-            //         position: { line: 0, character: value.length },
-            //     },
-            // });
-        }
+        sendJsonMessage({
+            jsonrpc: "2.0",
+            id: uuidv4(),
+            method: "textDocument/completion",
+            params: {
+                textDocument: {
+                    uri: "file://dummy.py",
+                    version: 1,
+                },
+                contentChanges: [{text: value}],
+            },
+        });
+
+        sendJsonMessage({
+            jsonrpc: "2.0",
+            id: uuidv4(),
+            method: "textDocument/hover",
+            params: {
+                textDocument: {
+                    uri: "file://dummy.py",
+                    version: 1,
+                },
+                position: {line: 2, character: value.length},
+            },
+        });
     };
 
     return (
@@ -118,9 +121,9 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
             width="100dvw"
             options={{
                 wordWrap: "on",
-                minimap: { enabled: false },
-                inlayHints: { enabled: "on" },
-                scrollbar: { horizontalScrollbarSize: 0 },
+                minimap: {enabled: false},
+                inlayHints: {enabled: "on"},
+                scrollbar: {horizontalScrollbarSize: 0},
             }}
         />
     );
