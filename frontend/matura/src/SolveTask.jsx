@@ -3,7 +3,8 @@ import {useNavigate, useSearchParams} from "react-router-dom";
 import {Subpage} from "./components/Subpage.jsx";
 import {useEffect, useState} from "react";
 import {
-    Button,
+    Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box,
+    Button, Code,
     Flex, ListItem,
     Menu,
     MenuButton,
@@ -46,23 +47,81 @@ CheckSubtaskMenuItem.propTypes = {
     onFullCheck: PropTypes.func
 }
 
-const SubtaskResultBody = ({result, testResults}) => (
-    <VStack align='start'>
-        <Text as='b' mb='5px'>Wynik: {result.score}% testów zaliczono</Text>
-        <Text>Testy:</Text>
-        <UnorderedList>
-            {testResults.map((testResult, index) => (
-                <ListItem key={testResult.id}>
-                    <Text>Test {index + 1}: {testResult.verdict === 'ACCEPTED'? 'Zaliczony' : 'Niezaliczony'}</Text>
-                    <Text>Werdykt: {testResult.verdict}</Text>
-                    <Text>Czas wykonania: {testResult.time / 1000}s</Text>
-                    <Text>Zużyta pamięć: {testResult.memory / 1024}Mb</Text>
-                    <Text whiteSpace="pre-line">{testResult.message}</Text>
-                </ListItem>
-            ))}
-        </UnorderedList>
+const TestResultAccordionItem = ({testResult, index}) => {
+    const verdictMapping = {
+        'ACCEPTED' : 'Zaliczony',
+        'WRONG_ANSWER' : 'Zła odpowiedź',
+        'TIME_LIMIT_EXCEEDED' : 'Przekroczono limit czasu',
+        'MEMORY_LIMIT_EXCEEDED' : 'Przekroczono limit pamięci',
+        'RUNTIME_ERROR' : 'Błąd wykonania',
+        'COMPILATION_ERROR' : 'Błąd kompilacji',
+        'SYSTEM_ERROR' : 'Błąd systemowy',
+        'RULES_VIOLATION' : 'Naruszenie zasad'
+    }
+    const statsVerdicts = ['ACCEPTED', 'WRONG_ANSWER', 'TIME_LIMIT_EXCEEDED', 'MEMORY_LIMIT_EXCEEDED']
+
+    return <AccordionItem>
+        <h2>
+            <AccordionButton>
+                <Box as="span" flex="1" textAlign="left" color={testResult.verdict === "ACCEPTED" ? "green" : "red"}>
+                    Test {index}
+                </Box>
+                <AccordionIcon/>
+            </AccordionButton>
+        </h2>
+        <AccordionPanel>
+            <Box mb="10pt">
+                <strong
+                    color={testResult.verdict === "ACCEPTED" ? "green" : "red"}>{verdictMapping[testResult.verdict]}</strong>
+            </Box>
+
+            {statsVerdicts.includes(testResult.verdict) && (
+                <Box mb="10pt">
+                    <Text>Czas wykonania programu
+                        wyniósł <Code>{Number(testResult.time / 1000).toFixed(2)} s.</Code></Text>
+                    <Text>Program
+                        wykorzystał <Code>{Number(testResult.memory / 1024).toFixed(2)} MB</Code> pamięci.</Text>
+                </Box>
+            )}
+
+            {testResult.message !== null && (
+                <>
+                    Konsola:
+                    <Box
+                        bg="gray.900"
+                        color="green.400"
+                        p={4}
+                        borderRadius="md"
+                        fontFamily="monospace"
+                        whiteSpace="pre-wrap"
+                        boxShadow="lg"
+                        border="1px solid"
+                        borderColor="green.500"
+                        overflow="auto"
+                        maxH="400px"
+                    >
+                        <Text>{testResult.message}</Text>
+                    </Box>
+                </>
+            )}
+        </AccordionPanel>
+    </AccordionItem>;
+}
+TestResultAccordionItem.propTypes = {
+    testResult: PropTypes.any,
+    index: PropTypes.number,
+};
+
+const SubtaskResultBody = ({result, testResults}) => {
+    return <VStack align='start'>
+        <Text as='b' mb='5px'>Zaliczono {result.score}% testów</Text>
+        <Accordion width='100%'>
+            {testResults.map(
+                (testResult, index) => <TestResultAccordionItem key={index} testResult={testResult} index={index + 1}/>
+            )}
+        </Accordion>
     </VStack>
-)
+}
 SubtaskResultBody.propTypes = {
     result: PropTypes.instanceOf(SubtaskResult),
     testResults: PropTypes.arrayOf(TestResult)
