@@ -11,6 +11,7 @@ import {ActiveTaskListWithAuth} from "./ActiveTasks.jsx";
 import SolveTaskWithAuth from "./SolveTask.jsx";
 import {FinishedTasksWithAuth} from "./FinishedTasks.jsx";
 import {ErrorElement} from "./ErrorElement.jsx";
+import {RegistrationForm} from './RegistrationForm.jsx';
 
 const router = createBrowserRouter([
     {
@@ -48,6 +49,11 @@ const router = createBrowserRouter([
         element: <SolveTaskWithAuth/>,
         errorElement: <ErrorElement/>
     },
+    {
+        path: '/register',
+        element: <RegistrationForm/>,
+        errorElement: <ErrorElement/>
+    }
 ])
 
 ReactDOM
