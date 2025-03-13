@@ -9,7 +9,7 @@ export const CodeEditor = ({language, startingCode, onChangeCallback}) => {
     const [editorInstance, setEditorInstance] = useState(null);
     const completionProviderRegistered = useRef(false);  // Ref to track registration
 
-    const {sendJsonMessage, lastJsonMessage} = useWebSocket("wss://test.lsp.it4u.app", {
+    const {sendJsonMessage, lastJsonMessage} = useWebSocket(import.meta.env.VITE_PYLSP_URL, {
         onOpen: () => {
             initializeLsp();
             console.log("✅ Connected to PyLSP");
