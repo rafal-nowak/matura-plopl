@@ -5,15 +5,14 @@ import {useEffect, useState} from "react";
 import {
     Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box,
     Button, Code,
-    Flex, ListItem,
-    Menu,
+    Flex, Menu,
     MenuButton,
     MenuDivider,
     MenuGroup,
     MenuItem,
     MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay,
     Stack,
-    Text, UnorderedList, useDisclosure,
+    Text, useDisclosure,
     useToast,
     VStack
 } from "@chakra-ui/react";
@@ -49,14 +48,14 @@ CheckSubtaskMenuItem.propTypes = {
 
 const TestResultAccordionItem = ({testResult, index}) => {
     const verdictMapping = {
-        'ACCEPTED' : 'Zaliczony',
-        'WRONG_ANSWER' : 'Zła odpowiedź',
-        'TIME_LIMIT_EXCEEDED' : 'Przekroczono limit czasu',
-        'MEMORY_LIMIT_EXCEEDED' : 'Przekroczono limit pamięci',
-        'RUNTIME_ERROR' : 'Błąd wykonania',
-        'COMPILATION_ERROR' : 'Błąd kompilacji',
-        'SYSTEM_ERROR' : 'Błąd systemowy',
-        'RULES_VIOLATION' : 'Naruszenie zasad'
+        'ACCEPTED': 'Zaliczony',
+        'WRONG_ANSWER': 'Zła odpowiedź',
+        'TIME_LIMIT_EXCEEDED': 'Przekroczono limit czasu',
+        'MEMORY_LIMIT_EXCEEDED': 'Przekroczono limit pamięci',
+        'RUNTIME_ERROR': 'Błąd wykonania',
+        'COMPILATION_ERROR': 'Błąd kompilacji',
+        'SYSTEM_ERROR': 'Błąd systemowy',
+        'RULES_VIOLATION': 'Naruszenie zasad'
     }
     const statsVerdicts = ['ACCEPTED', 'WRONG_ANSWER', 'TIME_LIMIT_EXCEEDED', 'MEMORY_LIMIT_EXCEEDED']
 
@@ -115,7 +114,7 @@ TestResultAccordionItem.propTypes = {
 const SubtaskResultBody = ({result, testResults}) => {
     return <VStack align='start'>
         <Text as='b' mb='5px'>Zaliczono {result.score}% testów</Text>
-        <Accordion width='100%'>
+        <Accordion width='100%' allowToggle>
             {testResults.map(
                 (testResult, index) => <TestResultAccordionItem key={index} testResult={testResult} index={index + 1}/>
             )}
@@ -129,33 +128,40 @@ SubtaskResultBody.propTypes = {
 
 const TaskResultBody = ({results}) => (
     <VStack align='start'>
-        <Text as='b' mb='5px'>Wynik: {Math.floor(
+        <Text as='b' mb='5px'>Zaliczono {Math.floor(
             results.reduce((sum, result) => sum + result[0].score, 0) / results.length
-        )}% testów zaliczono</Text>
+        )}% testów.</Text>
 
-        {results.map((result, idx) => (
-            <div key={idx}>
-                <Text as='b'>Podzadanie {idx + 1}: {result[0].score}%</Text>
-
-                <Text>Testy:</Text>
-                <UnorderedList>
-                    {result[1].map((testResult, index) => (
-                        <ListItem key={testResult.id}>
-                            <Text>Test {index + 1}: {testResult.verdict === 'ACCEPTED'? 'Zaliczony' : 'Niezaliczony'}</Text>
-                            <Text>Werdykt: {testResult.verdict}</Text>
-                            <Text>Czas wykonania: {testResult.time / 1000}s</Text>
-                            <Text>Zużyta pamięć: {testResult.memory / 1024}Mb</Text>
-                            <Text whiteSpace="pre-line">{testResult.message}</Text>
-                        </ListItem>
-                    ))}
-                </UnorderedList>
-            </div>
-        ))}
+        <Text>Wyniki:</Text>
+        <Accordion allowToggle w='100%'>
+            {results.map((result, idx) => (
+                <AccordionItem key={idx}>
+                    <h2>
+                        <AccordionButton>
+                            <Box as='span' flex="1" textAlign="left" color={result[0].score === 100? 'green' : 'red'}>
+                                Zadanie {idx + 1}: {result[0].score}%
+                            </Box>
+                            <AccordionIcon/>
+                        </AccordionButton>
+                    </h2>
+                    <AccordionPanel>
+                        <Accordion width='100%' allowToggle>
+                            {result[1].map((testResult, index) => (
+                                <TestResultAccordionItem testResult={testResult} index={index + 1} key={index}/>
+                            ))}
+                        </Accordion>
+                    </AccordionPanel>
+                </AccordionItem>
+            ))}
+        </Accordion>
 
     </VStack>
 )
 TaskResultBody.propTypes = {
-    results: PropTypes.arrayOf(PropTypes.shape({subtaskResult: PropTypes.instanceOf(SubtaskResult), testResults: PropTypes.arrayOf(TestResult)}))
+    results: PropTypes.arrayOf(PropTypes.shape({
+        subtaskResult: PropTypes.instanceOf(SubtaskResult),
+        testResults: PropTypes.arrayOf(TestResult)
+    }))
 }
 
 const SolveTask = () => {
@@ -225,7 +231,7 @@ const SolveTask = () => {
 
                     promise.then(result => {
                         setTestName(`Szybkie sprawdzenie podzadania ${i}`)
-                        setTestResultsBody(<SubtaskResultBody result={result[0]} testResults={result[1]} />)
+                        setTestResultsBody(<SubtaskResultBody result={result[0]} testResults={result[1]}/>)
                         modalOpen()
                     })
                 }} onFullCheck={() => {
@@ -248,7 +254,7 @@ const SolveTask = () => {
 
                     promise.then(result => {
                         setTestName(`Pełne sprawdzenie podzadania ${i}`)
-                        setTestResultsBody(<SubtaskResultBody result={result[0]} testResults={result[1]} />)
+                        setTestResultsBody(<SubtaskResultBody result={result[0]} testResults={result[1]}/>)
                         modalOpen()
                     })
                 }}/>
@@ -332,7 +338,6 @@ const SolveTask = () => {
                                         }
                                     })
 
-                                    //TODO show some feedback
                                     promise.then(results => {
                                         setTestName('Sprawdzenie pełne')
                                         setTestResultsBody(<TaskResultBody results={results}/>)
