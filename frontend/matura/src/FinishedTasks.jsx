@@ -26,6 +26,7 @@ import {LoadingCard} from "./components/LoadingCard.jsx";
 const TaskCard = ({ task }) => {
     const [loading, setLoading] = useState(true)
     const [template, setTemplate] = useState({})
+    const [lastSubmission, setLastSubmission] = useState({})
     const [assigningUsername, setAssigningUsername] = useState('')
 
     const navigate = useNavigate()
@@ -72,33 +73,39 @@ const TaskCard = ({ task }) => {
                     </CardBody>
 
                     <CardFooter justifyContent='center'>
-                        <Button marginY='5px' onClick={() => {
-                            const id = Task.createOrGet(template.id)
+                        <HStack>
+                            <Button marginY='5px' onClick={() => {
+                                const id = Task.createOrGet(template.id)
 
-                            toast.promise(id, {
-                                success: {
-                                    title: 'Ładowanie zakończone',
-                                    description: 'Wkrótce nastąpi przekierowanie',
-                                    isClosable: false
-                                },
-                                error: {
-                                    title: 'Wystąpił błąd',
-                                    description: 'Zadanie nie mogło zostać przypisane',
-                                    isClosable: true
-                                },
-                                loading: {
-                                    title: 'Ładowanie',
-                                    isClosable: false
-                                },
-                            })
+                                toast.promise(id, {
+                                    success: {
+                                        title: 'Ładowanie zakończone',
+                                        description: 'Wkrótce nastąpi przekierowanie',
+                                        isClosable: false
+                                    },
+                                    error: {
+                                        title: 'Wystąpił błąd',
+                                        description: 'Zadanie nie mogło zostać przypisane',
+                                        isClosable: true
+                                    },
+                                    loading: {
+                                        title: 'Ładowanie',
+                                        isClosable: false
+                                    },
+                                })
 
-                            id.then(value => {
-                                navigate(`/solve?task=${value}`)
-                            })
-                        }}>
-                            <i className="fa-solid fa-arrow-rotate-left"/>
-                            <Text marginLeft='5px'>Rozwiąż ponownie</Text>
-                        </Button>
+                                id.then(value => {
+                                    navigate(`/solve?task=${value}`)
+                                })
+                            }}>
+                                <i className="fa-solid fa-arrow-rotate-left"/>
+                                <Text marginLeft='5px'>Rozwiąż ponownie</Text>
+                            </Button>
+                            <Button onClick={() => {}}>
+                                <i className="fa-solid fa-code"/>
+                                <Text ml='5px'>Zobacz rozwiązanie</Text>
+                            </Button>
+                        </HStack>
                     </CardFooter>
                 </>
             )}
