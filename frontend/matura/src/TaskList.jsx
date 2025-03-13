@@ -7,10 +7,19 @@ import {
     Box,
     Button,
     Card,
-    CardBody,
-    CardHeader, Flex,
-    Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Select,
-    Text, useToast
+    CardHeader,
+    Flex,
+    Grid,
+    Input,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalHeader,
+    ModalOverlay,
+    Select,
+    Text,
+    useToast
 } from "@chakra-ui/react";
 import PropTypes from "prop-types";
 import {motion} from 'framer-motion'
@@ -21,79 +30,92 @@ import {Task} from "./services/taskService.js";
 import {LanguageIcon} from "./components/LanguageIcon.jsx";
 import {LoadingCard} from "./components/LoadingCard.jsx";
 
+const MotionBox = motion(Box);
+
 const TemplateCard = ({ template, ...props }) => {
     const toast = useToast();
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     return (
-        <Card {...props} marginY='4px'>
-            <CardHeader>
-                <Flex justifyContent='space-between' alignItems='center'>
-                    <Flex alignItems='center'>
-                        <LanguageIcon language={template.language} boxSize='50px'/>
-                        <Text marginX='5px'>{template.source}</Text>
+        <MotionBox
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+        >
+            <Card {...props} marginY='4px' borderRadius='lg' shadow='md'>
+                <CardHeader>
+                    <Flex justifyContent='space-between' alignItems='center'>
+                        <Flex alignItems='center'>
+                            <LanguageIcon language={template.language} boxSize='50px'/>
+                            <Text marginX='5px'>{template.source}</Text>
+                        </Flex>
+
+                        <Flex flexDirection='column'>
+                            <Button
+                                marginY='5px'
+                                colorScheme="teal"
+                                onClick={() => {
+                                    const id = Task.createOrGet(template.id);
+
+                                    toast.promise(id, {
+                                        success: {
+                                            title: 'Ładowanie zakończone',
+                                            description: 'Wkrótce nastąpi przekierowanie',
+                                        },
+                                        error: {
+                                            title: 'Wystąpił błąd',
+                                            description: 'Zadanie nie mogło zostać przypisane',
+                                        },
+                                        loading: {
+                                            title: 'Ładowanie...',
+                                        },
+                                    });
+
+                                    id.then(value => {
+                                        navigate(`/solve?task=${value}`);
+                                    });
+                                }}
+                            >
+                                <i className="fa-solid fa-code fa-fw"/>
+                                <Text marginLeft='5px'>Rozwiąż</Text>
+                            </Button>
+                            <Button
+                                colorScheme="orange"
+                                onClick={() => setIsModalOpen(true)}
+                                marginY='5px'
+                            >
+                                <i className="fa-solid fa-file-lines"/>
+                                <Text marginLeft='5px'>Polecenie</Text>
+                            </Button>
+                        </Flex>
                     </Flex>
+                </CardHeader>
 
-                    <Flex flexDirection='column'>
-                        <Button marginY='5px' onClick={() => {
-                            const id = Task.createOrGet(template.id);
-
-                            toast.promise(id, {
-                                success: {
-                                    title: 'Ładowanie zakończone',
-                                    description: 'Wkrótce nastąpi przekierowanie',
-                                    isClosable: false
-                                },
-                                error: {
-                                    title: 'Wystąpił błąd',
-                                    description: 'Zadanie nie mogło zostać przypisane',
-                                    isClosable: true
-                                },
-                                loading: {
-                                    title: 'Ładowanie',
-                                    isClosable: false
-                                },
-                            });
-
-                            id.then(value => {
-                                navigate(`/solve?task=${value}`);
-                            });
-                        }}>
-                            <i className="fa-solid fa-code fa-fw"/>
-                            <Text marginLeft='5px'>Rozwiąż</Text>
-                        </Button>
-                        <Button onClick={() => setIsModalOpen(true)} marginY='5px'>
-                            <i className="fa-solid fa-file-lines"/>
-                            <Text marginLeft='5px'>Polecenie</Text>
-                        </Button>
-                    </Flex>
-                </Flex>
-            </CardHeader>
-
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <ModalOverlay/>
-                <ModalContent maxWidth="80dvw">
-                    <ModalHeader>Polecenie</ModalHeader>
-                    <ModalCloseButton/>
-                    <ModalBody>
-                        <RenderMarkdown document={template.statement} />
-                    </ModalBody>
-                </ModalContent>
-            </Modal>
-        </Card>
+                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                    <ModalOverlay/>
+                    <ModalContent maxWidth="80dvw">
+                        <ModalHeader>Polecenie</ModalHeader>
+                        <ModalCloseButton/>
+                        <ModalBody>
+                            <RenderMarkdown document={template.statement} />
+                        </ModalBody>
+                    </ModalContent>
+                </Modal>
+            </Card>
+        </MotionBox>
     );
-}
+};
+
 TemplateCard.propTypes = {
     template: PropTypes.instanceOf(Template)
-}
+};
 
 const languagesText = {
     'C_SHARP': 'C#',
     'PYTHON': 'Python',
     'JAVA': 'Java',
     'CPP': 'C++'
-}
+};
 
 const TaskList = () => {
     const location = useLocation();
@@ -112,7 +134,7 @@ const TaskList = () => {
 
     useEffect(() => {
         setLoading(true);
-        getTemplates(page, 5, templateLanguage, templateSource).then(
+        getTemplates(page, 8, templateLanguage, templateSource).then(
             templatePage => {
                 setTemplatePage(templatePage);
                 setLoading(false);
@@ -155,11 +177,9 @@ const TaskList = () => {
                         }}>
                             {({values, isSubmitting, handleChange, handleBlur}) => (
                                 <Form>
-                                    <Flex flexDirection='row'>
+                                    <Flex flexDirection={{ base: 'column', md: 'row' }} gap='10px'>
                                         <Select
                                             placeholder='Wybierz język'
-                                            borderRightRadius='0'
-                                            width='33%'
                                             name='language'
                                             value={values.language}
                                             onChange={handleChange}
@@ -171,16 +191,21 @@ const TaskList = () => {
                                                 </option>
                                             ))}
                                         </Select>
+
                                         <Input
                                             type='text'
-                                            borderRadius='0'
                                             placeholder='Zadanie'
                                             name='source'
                                             value={values.source}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                         />
-                                        <Button type='submit' borderLeftRadius='0' disabled={isSubmitting}>
+
+                                        <Button
+                                            type='submit'
+                                            isLoading={isSubmitting}
+                                            colorScheme="blue"
+                                        >
                                             <i className="fa-solid fa-magnifying-glass fa-fw"/>
                                         </Button>
                                     </Flex>
@@ -189,16 +214,17 @@ const TaskList = () => {
                         </Formik>
                     </Box>
 
-                    {templatePage.templates.map((template) => (
-                        <TemplateCard template={template} id={template.id} key={template.id}/>
-                    ))}
+                    <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap='15px'>
+                        {templatePage.templates.map((template) => (
+                            <TemplateCard template={template} id={template.id} key={template.id}/>
+                        ))}
+                    </Grid>
 
-                    <Flex justifyContent='center'>
+                    <Flex justifyContent='center' marginTop='15px'>
                         <PaginationLinks totalPages={templatePage.totalPages} currentPage={page}/>
                     </Flex>
                 </>
-            )
-            }
+            )}
         </Subpage>
     )
 };

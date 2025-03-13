@@ -2,7 +2,8 @@ import {withAuthentication} from "./routeAuthentication.jsx";
 import {Subpage} from "./components/Subpage.jsx";
 import {Navigate, useLocation, useNavigate} from "react-router-dom";
 import {
-    Box, Button,
+    Box,
+    Button,
     Card,
     CardBody,
     CardFooter,
@@ -13,7 +14,7 @@ import {
     HStack,
     Spinner,
     Text,
-    useToast
+    useToast, VStack
 } from "@chakra-ui/react";
 import {useEffect, useState} from "react";
 import {getTasks, Task, TaskPage} from "./services/taskService.js";
@@ -22,35 +23,43 @@ import {PaginationLinks} from "./components/PaginationLinks.jsx";
 import {LanguageIcon} from "./components/LanguageIcon.jsx";
 import PropTypes from "prop-types";
 import {LoadingCard} from "./components/LoadingCard.jsx";
+import {motion} from 'framer-motion';
 
-const TaskCard = ({ task }) => {
-    const [loading, setLoading] = useState(true)
-    const [template, setTemplate] = useState({})
-    const [lastSubmission, setLastSubmission] = useState({})
-    const [assigningUsername, setAssigningUsername] = useState('')
+const MotionCard = motion(Card);
 
-    const navigate = useNavigate()
-    const toast = useToast()
+const TaskCard = ({task}) => {
+    const [loading, setLoading] = useState(true);
+    const [template, setTemplate] = useState({});
+    const [assigningUsername, setAssigningUsername] = useState('');
+
+    const navigate = useNavigate();
+    const toast = useToast();
 
     useEffect(() => {
-        setLoading(true)
+        setLoading(true);
 
         const fetch = async () => {
-            const template = await task.getTemplate()
-            setTemplate(template)
+            const template = await task.getTemplate();
+            setTemplate(template);
 
-            const username = await task.getAssigningUsername()
-            setAssigningUsername(username)
-        }
+            const username = await task.getAssigningUsername();
+            setAssigningUsername(username);
+        };
 
         fetch().then(() => {
-            setLoading(false)
-        })
+            setLoading(false);
+        });
     }, [task]);
 
-
     return (
-        <Card maxWidth='md' marginX='10px' marginY='25px'>
+        <MotionCard
+            maxW={{base: '100%', sm: '300px'}}
+            margin='10px'
+            borderRadius='lg'
+            boxShadow='md'
+            whileHover={{scale: 1.05}}
+            transition="all 0.3s ease"
+        >
             {loading && <LoadingCard/>}
 
             {!loading && (
@@ -60,62 +69,37 @@ const TaskCard = ({ task }) => {
                     </CardHeader>
 
                     <CardBody>
-                        <HStack>
-                            <LanguageIcon language={template.language} boxSize='100px'/>
+                        <HStack spacing='10px'>
+                            <LanguageIcon language={template.language} boxSize='80px'/>
 
                             <Box>
-                                <Text>Przypisał: {assigningUsername}</Text>
-                                <Text>
-                                    Przypisano {task.createdAt.toLocaleDateString().replaceAll('/', '.')}
-                                </Text>
+                                <Text>Przypisał: <strong>{assigningUsername}</strong></Text>
+                                <Text>Przypisano {task.createdAt.toLocaleDateString().replaceAll('/', '.')}</Text>
                             </Box>
                         </HStack>
                     </CardBody>
 
                     <CardFooter justifyContent='center'>
-                        <HStack>
-                            <Button marginY='5px' onClick={() => {
-                                const id = Task.createOrGet(template.id)
-
-                                toast.promise(id, {
-                                    success: {
-                                        title: 'Ładowanie zakończone',
-                                        description: 'Wkrótce nastąpi przekierowanie',
-                                        isClosable: false
-                                    },
-                                    error: {
-                                        title: 'Wystąpił błąd',
-                                        description: 'Zadanie nie mogło zostać przypisane',
-                                        isClosable: true
-                                    },
-                                    loading: {
-                                        title: 'Ładowanie',
-                                        isClosable: false
-                                    },
-                                })
-
-                                id.then(value => {
-                                    navigate(`/solve?task=${value}`)
-                                })
-                            }}>
-                                <i className="fa-solid fa-arrow-rotate-left"/>
+                        <VStack>
+                            <Button colorScheme="teal" width='100%' onClick={() => navigate(`/solve?task=${task.id}`)}>
+                                <i className="fa-solid fa-rotate-left fa-fw"/>
                                 <Text marginLeft='5px'>Rozwiąż ponownie</Text>
                             </Button>
-                            <Button onClick={() => {}}>
-                                <i className="fa-solid fa-code"/>
-                                <Text ml='5px'>Zobacz rozwiązanie</Text>
+                            <Button colorScheme="teal" width='100%' onClick={() => navigate(`/solve?task=${task.id}`)}>
+                                <i className="fa-solid fa-code fa-fw"/>
+                                <Text marginLeft='5px'>Wyświetl kod</Text>
                             </Button>
-                        </HStack>
+                        </VStack>
                     </CardFooter>
                 </>
             )}
+        </MotionCard>
+    );
+};
 
-        </Card>
-    )
-}
 TaskCard.propTypes = {
     task: PropTypes.instanceOf(Task).isRequired,
-}
+};
 
 const FinishedTasks = () => {
     const location = useLocation();
@@ -125,17 +109,14 @@ const FinishedTasks = () => {
 
     let page = Number((new URLSearchParams(location.search)).get('page') || 0);
 
-    if (page < 0)
-        window.location = '/activeTasks?page=0';
+    if (page < 0) window.location = '/finishedTasks?page=0';
 
     useEffect(() => {
         setLoading(true);
-        getTasks(page, 10, User.fromLocalStorage().id, ["FINISHED"]).then(
-            taskPage => {
-                setTaskPage(taskPage);
-                setLoading(false);
-            }
-        );
+        getTasks(page, 10, User.fromLocalStorage().id, ["FINISHED"]).then(taskPage => {
+            setTaskPage(taskPage);
+            setLoading(false);
+        });
     }, [page]);
 
     useEffect(() => {
@@ -146,42 +127,37 @@ const FinishedTasks = () => {
                 status: 'info',
                 duration: 4000,
                 isClosable: true
-            })
+            });
         }
     }, [taskPage, toast]);
 
     return (
-        <>
-            <Subpage>
-                {page >= taskPage.totalPages ? <Navigate to="/finishedTasks"/> : null}
+        <Subpage>
+            {page >= taskPage.totalPages ? <Navigate to="/finishedTasks"/> : null}
 
-                {loading && (
-                    <Card display="flex" alignItems="center" justifyContent="center">
-                        <CardBody textAlign="center">
-                            <Spinner size="xl"/>
-
-                            <Text>Ładowanie zadań</Text>
-                        </CardBody>
-                    </Card>
-                )}
-
-                <Grid templateColumns='repeat(5, auto)' templateRows='repeat(2, auto)'>
-                    {!loading && (
-                        <>
-                            {taskPage.tasks.map((task) => (
-                                <TaskCard task={task} key={task.id}/>
-                            ))}
-                        </>
-                    )}
-                </Grid>
-
-                <Flex justifyContent='center'>
-                    <PaginationLinks totalPages={taskPage.totalPages} currentPage={taskPage.currentPage - 1}/>
+            {loading && (
+                <Flex alignItems="center" justifyContent="center" height="200px">
+                    <Spinner size="xl"/>
+                    <Text marginLeft='10px'>Ładowanie zadań...</Text>
                 </Flex>
-            </Subpage>
-        </>
-    )
-}
+            )}
 
-export const FinishedTasksWithAuth = withAuthentication(FinishedTasks)
+            <Grid
+                templateColumns={{base: "1fr", md: "repeat(3, 1fr)", lg: "repeat(5, 1fr)"}}
+                gap='15px'
+            >
+                {!loading && (
+                    taskPage.tasks.map((task) => (
+                        <TaskCard task={task} key={task.id}/>
+                    ))
+                )}
+            </Grid>
 
+            <Flex justifyContent='center' marginTop='15px'>
+                <PaginationLinks totalPages={taskPage.totalPages} currentPage={taskPage.currentPage - 1}/>
+            </Flex>
+        </Subpage>
+    );
+};
+
+export const FinishedTasksWithAuth = withAuthentication(FinishedTasks);

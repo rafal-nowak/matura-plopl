@@ -10,12 +10,15 @@ import {
     Spinner,
     Text, useToast
 } from "@chakra-ui/react";
+import {motion} from 'framer-motion';
 import {getTasks, Task, TaskPage} from "./services/taskService.js";
 import {User} from "./services/userService.js";
 import PropTypes from "prop-types";
 import {LanguageIcon} from "./components/LanguageIcon.jsx";
 import {PaginationLinks} from "./components/PaginationLinks.jsx";
 import {LoadingCard} from "./components/LoadingCard.jsx";
+
+const MotionCard = motion(Card);
 
 const TaskCard = ({task}) => {
     const [loading, setLoading] = useState(true)
@@ -40,10 +43,15 @@ const TaskCard = ({task}) => {
         })
     }, [task]);
 
-
     return (
-        <Card maxWidth='md' marginX='10px' marginY='25px'>
-            {loading && <LoadingCard/> }
+        <MotionCard
+            maxW={{ base: '100%', sm: '300px' }}
+            margin='10px'
+            borderRadius='lg'
+            boxShadow='md'
+            whileHover={{ scale: 1.05 }}
+        >
+            {loading && <LoadingCard/>}
 
             {!loading && (
                 <>
@@ -52,32 +60,28 @@ const TaskCard = ({task}) => {
                     </CardHeader>
 
                     <CardBody>
-                        <HStack>
-                            <LanguageIcon language={template.language} boxSize='100px'/>
+                        <HStack spacing='10px'>
+                            <LanguageIcon language={template.language} boxSize='80px'/>
 
                             <Box>
-                                <Text>Przypisał: {assigningUsername}</Text>
-                                <Text>
-                                    Przypisano {task.createdAt.toLocaleDateString().replaceAll('/', '.')}
-                                </Text>
+                                <Text>Przypisał: <strong>{assigningUsername}</strong></Text>
+                                <Text>Przypisano {task.createdAt.toLocaleDateString().replaceAll('/', '.')}</Text>
                             </Box>
                         </HStack>
                     </CardBody>
 
                     <CardFooter justifyContent='center'>
-                        <Button marginY='5px' onClick={() => {
-                            navigate(`/solve?task=${task.id}`)
-                        }}>
+                        <Button colorScheme="teal" width='100%' onClick={() => navigate(`/solve?task=${task.id}`)}>
                             <i className="fa-solid fa-code fa-fw"/>
                             <Text marginLeft='5px'>Rozwiąż</Text>
                         </Button>
                     </CardFooter>
                 </>
             )}
-
-        </Card>
+        </MotionCard>
     )
 }
+
 TaskCard.propTypes = {
     task: PropTypes.instanceOf(Task).isRequired,
 }
@@ -95,7 +99,7 @@ const ActiveTaskList = () => {
 
     useEffect(() => {
         setLoading(true);
-        getTasks(page, 10, User.fromLocalStorage().id, ["CREATED", "PROCESSING"]).then(
+        getTasks(page, 15, User.fromLocalStorage().id, ["CREATED", "PROCESSING"]).then(
             taskPage => {
                 setTaskPage(taskPage);
                 setLoading(false);
@@ -120,30 +124,28 @@ const ActiveTaskList = () => {
             {page >= taskPage.totalPages ? <Navigate to="/activeTasks"/> : null}
 
             {loading && (
-                <Card display="flex" alignItems="center" justifyContent="center">
-                    <CardBody textAlign="center">
-                        <Spinner size="xl"/>
-
-                        <Text>Ładowanie zadań</Text>
-                    </CardBody>
-                </Card>
+                <Flex alignItems="center" justifyContent="center" height="200px">
+                    <Spinner size="xl"/>
+                    <Text marginLeft='10px'>Ładowanie zadań...</Text>
+                </Flex>
             )}
 
-            <Grid templateColumns='repeat(5, auto)' templateRows='repeat(2, auto)'>
+            <Grid
+                templateColumns={{ base: "1fr", md: "repeat(3, 1fr)", lg: "repeat(5, 1fr)" }}
+                gap='15px'
+            >
                 {!loading && (
-                    <>
-                        {taskPage.tasks.map((task) => (
-                            <TaskCard task={task} key={task.id}/>
-                        ))}
-                    </>
+                    taskPage.tasks.map((task) => (
+                        <TaskCard task={task} key={task.id}/>
+                    ))
                 )}
             </Grid>
 
-            <Flex justifyContent='center'>
+            <Flex justifyContent='center' marginTop='15px'>
                 <PaginationLinks totalPages={taskPage.totalPages} currentPage={taskPage.currentPage - 1}/>
             </Flex>
         </Subpage>
     );
 };
 
-export const ActiveTaskListWithAuth = withAuthentication(ActiveTaskList)
+export const ActiveTaskListWithAuth = withAuthentication(ActiveTaskList);
