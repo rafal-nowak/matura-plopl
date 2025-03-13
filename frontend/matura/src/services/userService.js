@@ -51,6 +51,7 @@ export class User {
     }
 
     static fromApiResponse(data) {
+        console.log(data)
         return new User(
             data['token'],
             data['userDto']['id'],
@@ -67,11 +68,21 @@ export const login = async (username, password) => {
             username: username,
             password: password
         })
-        .catch(e => {
-            throw e;
-        });
 
     User.fromApiResponse(response.data).saveToLocalStorage();
+}
+
+export const register = async (username, email, password) => {
+    let response = await axios
+        .post(`${API}/users`, {
+            username: username,
+            email: email,
+            password: password,
+            role: "STUDENT"
+        })
+        .catch(e => { throw e; })
+
+    await login(email, password)
 }
 
 export const logout = () => {
