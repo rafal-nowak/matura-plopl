@@ -9,8 +9,7 @@ import {
     Card,
     CardBody,
     CardHeader, Flex,
-    Input, Select,
-    Spinner,
+    Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Select,
     Text, useToast
 } from "@chakra-ui/react";
 import PropTypes from "prop-types";
@@ -22,10 +21,10 @@ import {Task} from "./services/taskService.js";
 import {LanguageIcon} from "./components/LanguageIcon.jsx";
 import {LoadingCard} from "./components/LoadingCard.jsx";
 
-const TemplateCard = ({template, ...props}) => {
-    const toast = useToast()
-    const navigate = useNavigate()
-    const [isExpanded, setIsExpanded] = useState(false);
+const TemplateCard = ({ template, ...props }) => {
+    const toast = useToast();
+    const navigate = useNavigate();
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     return (
         <Card {...props} marginY='4px'>
@@ -38,7 +37,7 @@ const TemplateCard = ({template, ...props}) => {
 
                     <Flex flexDirection='column'>
                         <Button marginY='5px' onClick={() => {
-                            const id = Task.createOrGet(template.id)
+                            const id = Task.createOrGet(template.id);
 
                             toast.promise(id, {
                                 success: {
@@ -55,37 +54,35 @@ const TemplateCard = ({template, ...props}) => {
                                     title: 'Ładowanie',
                                     isClosable: false
                                 },
-                            })
+                            });
 
                             id.then(value => {
-                                navigate(`/solve?task=${value}`)
-                            })
+                                navigate(`/solve?task=${value}`);
+                            });
                         }}>
                             <i className="fa-solid fa-code fa-fw"/>
                             <Text marginLeft='5px'>Rozwiąż</Text>
                         </Button>
-                        <Button onClick={() => setIsExpanded(!isExpanded)} marginY='5px'>
-                            <i className={`fa-solid fa-arrow-${isExpanded ? "up" : "down"} fa-fw`}/>
+                        <Button onClick={() => setIsModalOpen(true)} marginY='5px'>
+                            <i className="fa-solid fa-file-lines"/>
                             <Text marginLeft='5px'>Polecenie</Text>
                         </Button>
                     </Flex>
                 </Flex>
             </CardHeader>
-            {isExpanded && (
-                <motion.div
-                    initial={{height: '0'}}
-                    animate={{height: '100%'}}
-                    transition={{
-                        duration: '0.5',
-                    }}
-                >
-                    <CardBody display='flex' justifyContent='center'>
-                        <RenderMarkdown document={template.statement}/>
-                    </CardBody>
-                </motion.div>
-            )}
+
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <ModalOverlay/>
+                <ModalContent maxWidth="80dvw">
+                    <ModalHeader>Polecenie</ModalHeader>
+                    <ModalCloseButton/>
+                    <ModalBody>
+                        <RenderMarkdown document={template.statement} />
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
         </Card>
-    )
+    );
 }
 TemplateCard.propTypes = {
     template: PropTypes.instanceOf(Template)
