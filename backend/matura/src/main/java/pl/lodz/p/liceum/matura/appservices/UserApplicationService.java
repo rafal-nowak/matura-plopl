@@ -24,7 +24,8 @@ public class UserApplicationService {
     public User userSaveTransaction(User userToSave) {
         ZonedDateTime createdAt = ZonedDateTime.now(clock);
         userToSave.setCreatedAt(createdAt);
-        userToSave.setCreatedBy(authenticationFacade.getLoggedInUserId());
+        userToSave.setCreatedBy(0);
+        userToSave.setRole(UserRole.valueOf("STUDENT"));
         return userService.save(userToSave);
     }
 
