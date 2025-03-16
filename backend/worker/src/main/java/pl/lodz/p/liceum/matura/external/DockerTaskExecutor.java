@@ -178,6 +178,13 @@ public class DockerTaskExecutor implements TaskExecutor {
                 .collect(Collectors.joining("\n"));
     }
 
+    private String abbreviate(String input, int maxLength) {
+        if (input.length() <= maxLength) {
+            return input;
+        }
+        return input.substring(0, maxLength - 3) + "...";
+    }
+
     private boolean checkAnswer(Path userOutputFile, Path expectedOutputFile, TestResult testResult) {
         try {
             if (!Files.exists(userOutputFile)) {
@@ -197,7 +204,7 @@ public class DockerTaskExecutor implements TaskExecutor {
             for (int i = 0; i < Math.max(userOutput.size(), expectedOutput.size()); i++) {
                 if (i >= userOutput.size()) {
                     testResult.setVerdict(Verdict.WRONG_ANSWER);
-                    testResult.setMessage("Expected: " + expectedOutput.get(i) + " found: EOF");
+                    testResult.setMessage("Expected: " + abbreviate(expectedOutput.get(i), 20) + " found: EOF");
                     return false;
                 }
                 if (i >= expectedOutput.size()) {
@@ -209,7 +216,7 @@ public class DockerTaskExecutor implements TaskExecutor {
                 var expectedLine = expectedOutput.get(i).trim();
                 if (!userLine.equals(expectedLine)) {
                     testResult.setVerdict(Verdict.WRONG_ANSWER);
-                    testResult.setMessage("Expected: " + expectedOutput.get(i) + " found: " + userOutput.get(i));
+                    testResult.setMessage("Expected: " + abbreviate(expectedOutput.get(i), 20) + " found: " + abbreviate(userOutput.get(i), 20));
                     return false;
                 }
             }
