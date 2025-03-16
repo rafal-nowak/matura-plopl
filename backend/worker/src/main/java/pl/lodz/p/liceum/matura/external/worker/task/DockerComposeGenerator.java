@@ -32,6 +32,6 @@ public class DockerComposeGenerator {
                     ulimits:
                       cpu: %s         # 5 - Maksymalnie 5 sekundy czasu CPU
                 """;
-        return String.format(template, limits.getMemory(), limits.getTime() * 2, subtaskDefinition.getTestedFunctionName(), limits.getMemory() * 2 + 50000 + "kb", (int) Math.ceil(limits.getTime() * 2 / 1000d) + 5);
+        return String.format(template, limits.getMemory(), limits.getTime(), subtaskDefinition.getTestedFunctionName(), limits.getMemory() * 2 + 50000 + "kb", (int) Math.ceil(limits.getTime() * 2 / 1000d) + 5);
     }
 }
