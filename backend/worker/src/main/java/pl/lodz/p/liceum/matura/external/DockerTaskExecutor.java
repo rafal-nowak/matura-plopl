@@ -13,6 +13,7 @@ import pl.lodz.p.liceum.matura.external.worker.task.definition.CheckData;
 import pl.lodz.p.liceum.matura.external.worker.task.definition.SubtaskDefinition;
 import pl.lodz.p.liceum.matura.external.worker.task.definition.TaskDefinition;
 import pl.lodz.p.liceum.matura.external.worker.task.definition.TaskLimits;
+import pl.lodz.p.liceum.matura.utils.SimpleFileLock;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -236,80 +237,95 @@ public class DockerTaskExecutor implements TaskExecutor {
     public List<TestResult> executeSubtask(Subtask subtask) {
         log.info("Subtask execution started");
 
-        TaskDefinition taskDefinition = taskDefinitionParser.parse(subtask.getWorkspaceUrl() + "/task_definition.yml");
+        try {
+            SimpleFileLock lock = new SimpleFileLock(subtask.getWorkspaceUrl(), 180);
 
-        // TODO make it more robust
+            TaskDefinition taskDefinition = taskDefinitionParser.parse(subtask.getWorkspaceUrl() + "/task_definition.yml");
 
-        SubtaskDefinition subtaskDefinition = taskDefinition
-                .getTasks()
-                .get("task_" + subtask.getNumber());
-        CheckData checkData = taskDefinition
-                .getTasks()
-                .get("task_" + subtask.getNumber())
-                .getCheckTypes()
-                .get(subtask.getType().toString());
+            // TODO make it more robust
 
-        dockerComposeGenerator.generate(
-                subtask.getWorkspaceUrl() + "/docker-compose.yml",
-                taskDefinition.getTasks().get("task_" + subtask.getNumber()),
-                taskDefinition.getLimits()
-        );
+            SubtaskDefinition subtaskDefinition = taskDefinition
+                    .getTasks()
+                    .get("task_" + subtask.getNumber());
+            CheckData checkData = taskDefinition
+                    .getTasks()
+                    .get("task_" + subtask.getNumber())
+                    .getCheckTypes()
+                    .get(subtask.getType().toString());
 
-        File inputDirectory = new File(subtask.getWorkspaceUrl() + '/' + checkData.getInputFilesDirectory());
-        File[] inputFiles = inputDirectory.listFiles();
+            dockerComposeGenerator.generate(
+                    subtask.getWorkspaceUrl() + "/docker-compose.yml",
+                    taskDefinition.getTasks().get("task_" + subtask.getNumber()),
+                    taskDefinition.getLimits()
+            );
 
-        if (inputFiles == null) {
-            return List.of();
-        }
+            File inputDirectory = new File(subtask.getWorkspaceUrl() + '/' + checkData.getInputFilesDirectory());
+            File[] inputFiles = inputDirectory.listFiles();
 
-        List<TestResult> results = new ArrayList<>();
-
-        for (File inputFile : inputFiles) {
-            Path outputFilePath = Paths.get(subtask.getWorkspaceUrl(), checkData.getOutputFilesDirectory(), inputFile.getName().replace(".in", ".out"));
-            if (!Files.exists(outputFilePath)) {
-                log.info("Skipping file: " + inputFile.getName());
-                continue;
+            if (inputFiles == null) {
+                return List.of();
             }
+
+            List<TestResult> results = new ArrayList<>();
+
+            for (File inputFile : inputFiles) {
+                Path outputFilePath = Paths.get(subtask.getWorkspaceUrl(), checkData.getOutputFilesDirectory(), inputFile.getName().replace(".in", ".out"));
+                if (!Files.exists(outputFilePath)) {
+                    log.info("Skipping file: " + inputFile.getName());
+                    continue;
+                }
+
+                TestResult testResult = new TestResult();
+
+                try {
+                    prepareFile(inputFile.toPath(), Paths.get(subtask.getWorkspaceUrl(), Path.of(taskDefinition.getSourceFile()).getParent().toString(), subtaskDefinition.getUserInputFilename()));
+                } catch (IOException e) {
+                    testResult.setVerdict(Verdict.SYSTEM_ERROR);
+                    results.add(testResult);
+                    log.info("Failed to copy input file: " + inputFile.getName());
+                    continue;
+                }
+                if (execute(subtask, taskDefinition.getLimits(), testResult)) {
+                    Path userOutputFile = Paths.get(subtask.getWorkspaceUrl(), Path.of(taskDefinition.getSourceFile()).getParent().toString(), subtaskDefinition.getUserOutputFilename());
+                    if (!Files.exists(userOutputFile)) {
+                        Path userStandardOutputPath = Paths.get(subtask.getWorkspaceUrl(), "user_standard_output.txt");
+                        if (!Files.exists(userStandardOutputPath)) {
+                            testResult.setVerdict(Verdict.SYSTEM_ERROR);
+                            results.add(testResult);
+                            log.info("No user standard output file found");
+                            continue;
+                        }
+                        userOutputFile = userStandardOutputPath;
+                    }
+                    if (checkAnswer(userOutputFile, outputFilePath, testResult))
+                        testResult.setVerdict(Verdict.ACCEPTED);
+                    userOutputFile = Paths.get(subtask.getWorkspaceUrl(), Path.of(taskDefinition.getSourceFile()).getParent().toString(), subtaskDefinition.getUserOutputFilename());
+                    if (Files.exists(userOutputFile)) {
+                        try {
+                            Files.delete(userOutputFile);
+                        } catch (IOException e) {
+                            testResult.setVerdict(Verdict.SYSTEM_ERROR);
+                            results.add(testResult);
+                            log.info("Failed to delete user output file: " + userOutputFile.toString());
+                            continue;
+                        }
+                    }
+                }
+                results.add(testResult);
+            }
+            lock.releaseLock();
+
+            return results;
+        }
+        catch (Exception e) {
+            log.info("Failed to lock the directory");
+            e.printStackTrace();
 
             TestResult testResult = new TestResult();
+            testResult.setVerdict(Verdict.SYSTEM_ERROR);
 
-            try {
-                prepareFile(inputFile.toPath(), Paths.get(subtask.getWorkspaceUrl(), Path.of(taskDefinition.getSourceFile()).getParent().toString(), subtaskDefinition.getUserInputFilename()));
-            } catch (IOException e) {
-                testResult.setVerdict(Verdict.SYSTEM_ERROR);
-                results.add(testResult);
-                log.info("Failed to copy input file: " + inputFile.getName());
-                continue;
-            }
-            if (execute(subtask, taskDefinition.getLimits(), testResult)) {
-                Path userOutputFile = Paths.get(subtask.getWorkspaceUrl(), Path.of(taskDefinition.getSourceFile()).getParent().toString(), subtaskDefinition.getUserOutputFilename());
-                if (!Files.exists(userOutputFile)) {
-                    Path userStandardOutputPath = Paths.get(subtask.getWorkspaceUrl(), "user_standard_output.txt");
-                    if (!Files.exists(userStandardOutputPath)) {
-                        testResult.setVerdict(Verdict.SYSTEM_ERROR);
-                        results.add(testResult);
-                        log.info("No user standard output file found");
-                        continue;
-                    }
-                    userOutputFile = userStandardOutputPath;
-                }
-                if (checkAnswer(userOutputFile, outputFilePath, testResult))
-                    testResult.setVerdict(Verdict.ACCEPTED);
-                userOutputFile = Paths.get(subtask.getWorkspaceUrl(), Path.of(taskDefinition.getSourceFile()).getParent().toString(), subtaskDefinition.getUserOutputFilename());
-                if (Files.exists(userOutputFile)) {
-                    try {
-                        Files.delete(userOutputFile);
-                    } catch (IOException e) {
-                        testResult.setVerdict(Verdict.SYSTEM_ERROR);
-                        results.add(testResult);
-                        log.info("Failed to delete user output file: " + userOutputFile.toString());
-                        continue;
-                    }
-                }
-            }
-            results.add(testResult);
+            return List.of(testResult);
         }
-        return results;
     }
 
     private String[] prepareCommand(String workspaceUrl) {
