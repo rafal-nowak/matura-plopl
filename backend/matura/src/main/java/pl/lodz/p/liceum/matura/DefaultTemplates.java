@@ -170,6 +170,7 @@ public class DefaultTemplates implements CommandLineRunner {
     @Override
     public void run(String... args) {
         try {
+            log.info("Test");
             addTemplate(matura05_2023Python);
             addTemplate(matura06_2024Python);
 //            addTemplate(matura05_2023CSharp);
