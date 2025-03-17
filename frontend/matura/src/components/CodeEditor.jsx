@@ -1,58 +1,63 @@
-import {useState, useRef} from "react";
-import {Editor} from "@monaco-editor/react";
+import { useState, useRef } from "react";
+import { Editor } from "@monaco-editor/react";
 import PropTypes from "prop-types";
 import useWebSocket from "react-use-websocket";
-import {v4 as uuidv4} from "uuid";
+import { v4 as uuidv4 } from "uuid";
 
-export const CodeEditor = ({language, startingCode, onChangeCallback}) => {
+export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
     const [isInitialized, setIsInitialized] = useState(false);
     const [editorInstance, setEditorInstance] = useState(null);
-    const completionProviderRegistered = useRef(false);  // Ref to track registration
+    const completionProviderRef = useRef(null);
 
-    const {sendJsonMessage, lastJsonMessage} = useWebSocket(import.meta.env.VITE_PYLSP_URL, {
+    const { sendJsonMessage } = useWebSocket(import.meta.env.VITE_PYLSP_URL, {
         onOpen: () => {
+            console.log("✅ Połączono z serwerem LSP");
             initializeLsp();
-            console.log("✅ Connected to PyLSP");
         },
         onMessage: (event) => {
-            const response = JSON.parse(event.data);
+            try {
+                const response = JSON.parse(event.data);
+                console.log("📥 Odebrano pełną odpowiedź:", JSON.stringify(response, null, 2));
 
-            if (response.id === "initialize") {
-                setIsInitialized(true);
-            }
-
-            if (Array.isArray(response.result.items)) {
-                // Clear previous completion items provider if registered
-                if (completionProviderRegistered.current) {
-                    monaco.languages.unregisterCompletionItemProvider("python");
+                if (response.error) {
+                    console.error("❌ Błąd LSP:", response.error);
+                    return;
                 }
 
-                // Register new completion items provider
-                monaco.languages.registerCompletionItemProvider("python", {
-                    provideCompletionItems: () => ({
-                        suggestions: response.result.items.map(item => ({
-                            label: item.label,
-                            kind: monaco.languages.CompletionItemKind.Function,
-                            insertText: item.insertText || item.label,
-                            detail: item.detail || "",
-                            documentation: item.documentation || ""
-                        }))
-                    })
-                });
+                if (response.id === "initialize") {
+                    console.log("✅ LSP zainicjalizowany");
+                    setIsInitialized(true);
+                } else if (response.result) {
+                    if (Array.isArray(response.result.items)) {
+                        console.log("💡 Odebrane podpowiedzi:", response.result.items);
 
-                // Mark the provider as registered
-                completionProviderRegistered.current = true;
-            }
+                        if (completionProviderRef.current) {
+                            completionProviderRef.current.dispose();
+                        }
 
-            // Handle hover response
-            if (typeof response.result.contents === "string") {
-                console.log('docs')
-                console.log(response.result.contents);
-                monaco.languages.registerHoverProvider("python", {
-                    provideHover: () => ({
-                        contents: [{value: response.result.contents}]
-                    })
-                });
+                        completionProviderRef.current = monaco.languages.registerCompletionItemProvider("python", {
+                            provideCompletionItems: () => ({
+                                suggestions: response.result.items.map(item => ({
+                                    label: item.label,
+                                    kind: monaco.languages.CompletionItemKind.Function,
+                                    insertText: item.insertText || item.label,
+                                    detail: item.detail || "",
+                                    documentation: item.documentation || ""
+                                }))
+                            })
+                        });
+                    }
+
+                    if (typeof response.result.contents === "string") {
+                        monaco.languages.registerHoverProvider("python", {
+                            provideHover: () => ({
+                                contents: [{ value: response.result.contents }]
+                            })
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("❌ Błąd parsowania JSON:", error);
             }
         },
         shouldReconnect: () => true,
@@ -63,12 +68,21 @@ export const CodeEditor = ({language, startingCode, onChangeCallback}) => {
             jsonrpc: "2.0",
             id: "initialize",
             method: "initialize",
+            params: { processId: null, rootUri: null, capabilities: {}, clientInfo: { name: "ReactLSPClient", version: "1.0" }}
+        });
+        sendJsonMessage({
+            jsonrpc: "2.0",
+            id: "initialized",
+            method: "initialized",
+            params: {}
+        });
+        sendJsonMessage({
+            jsonrpc: "2.0",
+            id: uuidv4(),
+            method: "textDocument/didOpen",
             params: {
-                processId: null,
-                rootUri: null,
-                capabilities: {},
-                clientInfo: {name: "MonacoLSPClient", version: "1.0"},
-            },
+                textDocument: { uri: "file://dummy.py", languageId: "python", version: 1, text: startingCode || "" }
+            }
         });
     };
 
@@ -85,27 +99,30 @@ export const CodeEditor = ({language, startingCode, onChangeCallback}) => {
 
         sendJsonMessage({
             jsonrpc: "2.0",
-            id: uuidv4(),
-            method: "textDocument/completion",
+            method: "textDocument/didChange",
             params: {
-                textDocument: {
-                    uri: "file://dummy.py",
-                    version: 1,
-                },
-                contentChanges: [{text: value}],
+                textDocument: { uri: "file://dummy.py" },
+                contentChanges: [{ text: value }],
             },
         });
+
+        setTimeout(() => handleCompletion(value), 50);
+    };
+
+    const handleCompletion = (newCode) => {
+        if (!isInitialized) return;
+
+        const lines = newCode.split("\n");
+        const lastLineIndex = lines.length - 1;
+        const lastLineLength = lines[lastLineIndex]?.length || 0;
 
         sendJsonMessage({
             jsonrpc: "2.0",
             id: uuidv4(),
-            method: "textDocument/hover",
+            method: "textDocument/completion",
             params: {
-                textDocument: {
-                    uri: "file://dummy.py",
-                    version: 1,
-                },
-                position: {line: 2, character: value.length},
+                textDocument: { uri: "file://dummy.py" },
+                position: { line: lastLineIndex, character: lastLineLength },
             },
         });
     };
@@ -121,9 +138,9 @@ export const CodeEditor = ({language, startingCode, onChangeCallback}) => {
             width="100dvw"
             options={{
                 wordWrap: "on",
-                minimap: {enabled: false},
-                inlayHints: {enabled: "on"},
-                scrollbar: {horizontalScrollbarSize: 0},
+                minimap: { enabled: false },
+                inlayHints: { enabled: "on" },
+                scrollbar: { horizontalScrollbarSize: 0 },
             }}
         />
     );
