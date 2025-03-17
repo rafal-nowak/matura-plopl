@@ -9,6 +9,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.springframework.beans.factory.annotation.Value;
+import pl.lodz.p.liceum.matura.domain.task.FailedToLockTaskDirectoryException;
 import pl.lodz.p.liceum.matura.domain.workspace.*;
 import pl.lodz.p.liceum.matura.utils.SimpleFileLock;
 
@@ -42,7 +43,7 @@ public class WorkspaceService implements Workspace {
             lock.releaseLock();
         }
         catch (Exception e) {
-            throw new RuntimeException("Failed to lock the directory", e);
+            throw new FailedToLockTaskDirectoryException();
         }
         return absoluteDestinationPath;
     }
