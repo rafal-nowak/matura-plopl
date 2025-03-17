@@ -8,29 +8,29 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
     const [isInitialized, setIsInitialized] = useState(false);
     const [editorInstance, setEditorInstance] = useState(null);
     const completionProviderRef = useRef(null);
-    const hoverProviderRef = useRef(null);
+    // const hoverProviderRef = useRef(null);
 
     const { sendJsonMessage } = useWebSocket(import.meta.env.VITE_PYLSP_URL, {
         onOpen: () => {
-            console.log("✅ Połączono z serwerem LSP");
+            console.log("Connected to the python LSP server");
             initializeLsp();
         },
         onMessage: (event) => {
             try {
                 const response = JSON.parse(event.data);
-                console.log("📥 Odebrano pełną odpowiedź:", JSON.stringify(response, null, 2));
+                // console.log("📥 Odebrano pełną odpowiedź:", JSON.stringify(response, null, 2));
 
                 if (response.error) {
-                    console.error("❌ Błąd LSP:", response.error);
+                    // console.error("❌ Błąd LSP:", response.error);
                     return;
                 }
 
                 if (response.id === "initialize") {
-                    console.log("✅ LSP zainicjalizowany");
+                    // console.log("✅ LSP zainicjalizowany");
                     setIsInitialized(true);
                 } else if (response.result) {
                     if (Array.isArray(response.result.items)) {
-                        console.log("💡 Odebrane podpowiedzi:", response.result.items);
+                        // console.log("💡 Odebrane podpowiedzi:", response.result.items);
 
                         if (completionProviderRef.current) {
                             completionProviderRef.current.dispose();
@@ -74,7 +74,7 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
                     // }
                 }
             } catch (error) {
-                console.error("❌ Błąd parsowania JSON:", error);
+                console.error("Error parsing JSON", error);
             }
         },
         shouldReconnect: () => true,
