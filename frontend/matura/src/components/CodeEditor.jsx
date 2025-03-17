@@ -48,13 +48,13 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
                         });
                     }
 
-                    if (typeof response.result.contents === "string") {
-                        monaco.languages.registerHoverProvider("python", {
-                            provideHover: () => ({
-                                contents: [{ value: response.result.contents }]
-                            })
-                        });
-                    }
+                    // if (typeof response.result.contents === "string") {
+                    //     monaco.languages.registerHoverProvider("python", {
+                    //         provideHover: () => ({
+                    //             contents: [{ value: response.result.contents }]
+                    //         })
+                    //     });
+                    // }
                 }
             } catch (error) {
                 console.error("❌ Błąd parsowania JSON:", error);
@@ -109,23 +109,27 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
         setTimeout(() => handleCompletion(value), 50);
     };
 
-    const handleCompletion = (newCode) => {
-        if (!isInitialized) return;
+    const handleCompletion = () => {
+        if (!isInitialized || !editorInstance) return;
 
-        const lines = newCode.split("\n");
-        const lastLineIndex = lines.length - 1;
-        const lastLineLength = lines[lastLineIndex]?.length || 0;
+        // Get current cursor position
+        const position = editorInstance.getPosition();
 
+        // Ensure position is valid
+        if (!position) return;
+
+        // Send completion request to the server with the current position
         sendJsonMessage({
             jsonrpc: "2.0",
             id: uuidv4(),
             method: "textDocument/completion",
             params: {
                 textDocument: { uri: "file://dummy.py" },
-                position: { line: lastLineIndex, character: lastLineLength },
+                position: { line: position.lineNumber - 1, character: position.column - 1 }, // Monaco positions are 1-indexed, LSP is 0-indexed
             },
         });
     };
+
 
     return (
         <Editor
