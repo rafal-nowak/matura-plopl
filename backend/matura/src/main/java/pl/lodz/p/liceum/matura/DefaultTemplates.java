@@ -167,11 +167,60 @@ public class DefaultTemplates implements CommandLineRunner {
             ZonedDateTime.now()
     );
 
+    // TEMP
+    private final Template PAAkwarium = new Template(
+            null,
+            "https://github.com/HubertM6/Akwarium",
+            TaskLanguage.PYTHON,
+            "PA 2025",
+            """
+                    # Zadanie Akwarium
+                    
+                    Postanowiłeś/aś kupić nowe akwarium dla swojej złotej rybki. W sklepie z akwariami masz bardzo duży wybór:
+                    możesz kupić prostopadłościenne akwarium o podstawie a na b oraz wysokości h dla dowolnych
+                    całkowitych dodatnich wymiarów a, b i h.
+                    Twoja rybka lubi robić poranne ćwiczenia i na rozgrzewkę pływa w tę i z powrotem po jednej z przekątnych
+                    akwarium. Długość przekątnej akwarium wyraża się wzorem √(a^2 + b^2 + h^2).
+                    Aby ułatwić rybce obliczenia, ile przepłynęła danego dnia, chcesz, aby długość przekątnej również wyrażała
+                    się liczbą całkowitą. Zbyt duże akwarium też nie wchodzi w rachubę, więc długość jego przekątnej musi wynosić
+                    co najwyżej n.
+                    Ile różnych akwariów spełnia wszystkie wymagania? Dwa akwaria uznajemy za różne, jeśli mają inną
+                    wysokość lub inną nieuporządkowaną parę {a, b} (akwarium o podstawie a na b i wysokości h oraz akwarium
+                    o podstawie b na a i wysokości h są takie same).
+                    
+                    W pliku "dane.txt" znajduje się jedna liczba całkowita n (1 <= n <= 5000).
+                    
+                    Odpowiedź zapisz w pliku "wynik.txt"
+                    
+                    Przykład:
+                    Dla danych wejściowych:
+                    7
+                    poprawnym wynikiem jest:
+                    7
+                    
+                    Wyjaśnienie przykładu:
+                    Możliwe są następujące akwaria:
+                    - Podstawa 1 na 2, wysokość 2, przekątna 3.
+                    - Podstawa 2 na 2, wysokość 1, przekątna 3.
+                    - Podstawa 2 na 4, wysokość 4, przekątna 6.
+                    - Podstawa 4 na 4, wysokość 2, przekątna 6.
+                    - Podstawa 2 na 3, wysokość 6, przekątna 7.
+                    - Podstawa 2 na 6, wysokość 3, przekątna 7.
+                    - Podstawa 3 na 6, wysokość 2, przekątna 7.
+                    
+                    Zadanie pochodzi z Potyczek Algorytmicznych 2025 i zostało dodane tylko w calach testowych, nie będzie dostępne w publicznej wersji systemu.
+                    """,
+            1,
+            0,
+            ZonedDateTime.now()
+    );
+
     @Override
     public void run(String... args) {
         try {
             addTemplate(matura05_2023Python);
             addTemplate(matura06_2024Python);
+            addTemplate(PAAkwarium);
 //            addTemplate(matura05_2023CSharp);
 //            addTemplate(matura05_2023Java);
 //            addTemplate(matura05_2022Python);
