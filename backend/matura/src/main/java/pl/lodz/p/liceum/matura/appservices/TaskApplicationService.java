@@ -36,7 +36,15 @@ public class TaskApplicationService {
 
     public Map<String, Object> readTaskDefinitionFile(Integer taskId) {
         String workspaceUrl = getWorkspaceUrl(taskId);
-        return workspace.readTaskDefinitionFile(workspaceUrl);
+        try {
+            SimpleFileLock lock = new SimpleFileLock(workspaceUrl, 2);
+            var taskDefinition = workspace.readTaskDefinitionFile(workspaceUrl);
+            lock.releaseLock();
+            return taskDefinition;
+        }
+        catch (Exception e) {
+            throw new FailedToLockTaskDirectoryException();
+        }
     }
 
     public byte[] readFile(Integer taskId) {
@@ -50,7 +58,7 @@ public class TaskApplicationService {
             return content;
         }
         catch (Exception e) {
-            throw new RuntimeException("Failed to lock the directory", e);
+            throw new FailedToLockTaskDirectoryException();
         }
     }
 
@@ -64,7 +72,7 @@ public class TaskApplicationService {
             lock.releaseLock();
         }
         catch (Exception e) {
-            throw new RuntimeException("Failed to lock the directory", e);
+            throw new FailedToLockTaskDirectoryException();
         }
     }
 
