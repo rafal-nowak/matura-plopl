@@ -107,6 +107,18 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
         });
 
         setTimeout(() => handleCompletion(value), 50);
+
+        const position = editorInstance.getPosition();
+        if (!position) return;
+
+        // 📄 Find the line at the caret's position
+        const lines = value.split("\n");
+        const currentLine = lines[position.lineNumber - 1] || "";
+
+        // 🔥 Trigger suggestion if the last character in the current line is a dot
+        if (currentLine.trim().slice(-1) === ".") {
+            editorInstance.trigger('keyboard', 'editor.action.triggerSuggest', {});
+        }
     };
 
     const handleCompletion = () => {
@@ -130,6 +142,7 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
         });
     };
 
+    // setTimeout(() => editorInstance.trigger('keyboard', 'editor.action.triggerSuggest', {}), 2500)
 
     return (
         <Editor
