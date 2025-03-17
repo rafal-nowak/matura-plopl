@@ -24,12 +24,12 @@ import {
     useColorMode,
     useDisclosure
 } from "@chakra-ui/react";
-import { HamburgerIcon } from '@chakra-ui/icons';
+import {HamburgerIcon} from '@chakra-ui/icons';
 import {logout, User} from "../services/userService.js";
 
 export const Navbar = () => {
     const {colorMode, toggleColorMode} = useColorMode();
-    const { isOpen, onOpen, onClose } = useDisclosure();
+    const {isOpen, onOpen, onClose} = useDisclosure();
     const navigate = useNavigate();
     const user = User.fromLocalStorage();
 
@@ -43,7 +43,7 @@ export const Navbar = () => {
             wrap="wrap"
         >
             {/* Desktop Menu */}
-            <Box display={{ base: "none", md: "flex" }} flexGrow={1}>
+            <Box display={{base: "none", md: "flex"}} flexGrow={1}>
                 <Button size='lg' variant="link" color="white" onClick={() => navigate('/dashboard')} margin='10px'>
                     <i className="fa-solid fa-house"/><Text marginX='5px'>Strona główna</Text>
                 </Button>
@@ -57,51 +57,49 @@ export const Navbar = () => {
                         Moje zadania <i className="fa-solid fa-fw fa-angle-down"/>
                     </MenuButton>
                     <MenuList>
-                        {user.role === "INSTRUCTOR" && (
+                        {(user.role === "INSTRUCTOR" || user.role === "ADMIN") && (
                             <>
-                                <MenuGroup title='Przypisywanie'>
+                                <MenuGroup title='Przypisywanie zadań'>
                                     <MenuItem>Zarządzaj</MenuItem>
                                     <MenuItem>Przypisz uczniowi</MenuItem>
                                     <MenuItem>Przypisz grupie</MenuItem>
                                 </MenuGroup>
                                 <MenuDivider/>
-                                <MenuGroup title='Zadania'>
+                                <MenuGroup title='Autorskie zadania'>
                                     <MenuItem>Zarządzaj</MenuItem>
                                     <MenuItem>Stwórz</MenuItem>
                                 </MenuGroup>
+                                <MenuDivider/>
+
                             </>
                         )}
+                        <MenuGroup title='Rozwiązywanie zadań'>
+                            <MenuItem onClick={() => navigate('/activeTasks')}>
+                                <i className="fa-solid fa-fw fa-clipboard"/><Text marginX='2px'>Aktywne</Text>
+                            </MenuItem>
 
-                        {user.role === "STUDENT" && (
-                            <>
-                                <MenuItem onClick={() => navigate('/activeTasks')}>
-                                    <i className="fa-solid fa-fw fa-clipboard"/><Text marginX='2px'>Aktywne</Text>
-                                </MenuItem>
+                            <MenuItem onClick={() => navigate('/finishedTasks')}>
+                                <i className="fa-solid fa-fw fa-check-double"/><Text marginX='2px'>Rozwiązane</Text>
+                            </MenuItem>
+                        </MenuGroup>
 
-                                <MenuItem onClick={() => navigate('/finishedTasks')}>
-                                    <i className="fa-solid fa-fw fa-check-double"/><Text marginX='2px'>Rozwiązane</Text>
-                                </MenuItem>
-                            </>
-                        )}
                     </MenuList>
                 </Menu>
             </Box>
 
-            {/* Hamburger Icon for Mobile Menu */}
-            <Box display={{ base: "block", md: "none" }}>
+            <Box display={{base: "block", md: "none"}}>
                 <IconButton
-                    icon={<HamburgerIcon />}
+                    icon={<HamburgerIcon/>}
                     variant="outline"
                     color="white"
                     onClick={onOpen}
                 />
             </Box>
 
-            {/* Mobile Drawer */}
             <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
-                <DrawerOverlay />
+                <DrawerOverlay/>
                 <DrawerContent bg="#7A3530" color="white">
-                    <DrawerCloseButton />
+                    <DrawerCloseButton/>
                     <DrawerHeader>Menu</DrawerHeader>
 
                     <DrawerBody>
@@ -113,32 +111,29 @@ export const Navbar = () => {
                             <i className="fa-solid fa-fw fa-book-open"/><Text marginLeft='5px'>Zbiór zadań</Text>
                         </Button>
 
-                        {user.role === "INSTRUCTOR" && (
+                        {(user.role === "INSTRUCTOR" || user.role === "ADMIN" ) && (
                             <>
-                                <Heading size='sm' marginTop='15px'>Przypisywanie</Heading>
+                                <Heading size='sm' marginTop='15px'>Przypisywanie zadań</Heading>
                                 <Button variant="ghost" w="100%">Zarządzaj</Button>
                                 <Button variant="ghost" w="100%">Przypisz uczniowi</Button>
                                 <Button variant="ghost" w="100%">Przypisz grupie</Button>
                             </>
                         )}
 
-                        {user.role === "STUDENT" && (
-                            <>
-                                <Heading size='sm' marginTop='15px'>Zadania</Heading>
-                                <Button variant="ghost" w="100%" onClick={() => navigate('/activeTasks')}>
-                                    Aktywne
-                                </Button>
 
-                                <Button variant="ghost" w="100%" onClick={() => navigate('/finishedTasks')}>
-                                    Rozwiązane
-                                </Button>
-                            </>
-                        )}
+                        <Heading size='sm' marginTop='15px'>Rozwiązywanie zadań</Heading>
+                        <Button variant="ghost" w="100%" onClick={() => navigate('/activeTasks')}>
+                            Aktywne
+                        </Button>
+
+                        <Button variant="ghost" w="100%" onClick={() => navigate('/finishedTasks')}>
+                            Rozwiązane
+                        </Button>
 
                         {/* Bottom Section for Profile/Settings/Logout */}
                         <Box mt="5">
                             <HStack>
-                                <Avatar size="sm" name={user.username} />
+                                <Avatar size="sm" name={user.username}/>
                                 <Text>{user.username}</Text>
                             </HStack>
 
@@ -167,14 +162,14 @@ export const Navbar = () => {
                 </DarkMode>
 
                 <MenuList>
-                    <MenuItem><i className="fa-solid fa-user fa-fw"/> Profil</MenuItem>
+                    {/*<MenuItem><i className="fa-solid fa-user fa-fw"/> Profil</MenuItem>*/}
 
                     <MenuItem onClick={toggleColorMode}>
                         <i className={'fa-solid fa-fw ' + (colorMode === 'light' ? 'fa-moon' : 'fa-sun')}/>
                         Ustaw {colorMode === 'light' ? 'ciemny' : 'jasny'} motyw
                     </MenuItem>
 
-                    <MenuItem><i className='fa-solid fa-gear fa-fw'/> Ustawienia </MenuItem>
+                    {/*<MenuItem><i className='fa-solid fa-gear fa-fw'/> Ustawienia </MenuItem>*/}
 
                     <MenuItem onClick={logout}><i className="fa-solid fa-right-from-bracket fa-fw"/>
                         Wyloguj się
