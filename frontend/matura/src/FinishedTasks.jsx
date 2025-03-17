@@ -85,10 +85,10 @@ const TaskCard = ({task}) => {
                                 <i className="fa-solid fa-rotate-left fa-fw"/>
                                 <Text marginLeft='5px'>Rozwiąż ponownie</Text>
                             </Button>
-                            <Button colorScheme="teal" width='100%' onClick={() => navigate(`/solve?task=${task.id}`)}>
-                                <i className="fa-solid fa-code fa-fw"/>
-                                <Text marginLeft='5px'>Wyświetl kod</Text>
-                            </Button>
+                            {/*<Button colorScheme="teal" width='100%' onClick={() => navigate(`/solve?task=${task.id}`)}>*/}
+                            {/*    <i className="fa-solid fa-code fa-fw"/>*/}
+                            {/*    <Text marginLeft='5px'>Wyświetl kod</Text>*/}
+                            {/*</Button>*/}
                         </VStack>
                     </CardFooter>
                 </>
