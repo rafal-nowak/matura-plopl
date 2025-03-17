@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 //@SpringBootTest
 class FileLockTest extends BaseIT {
-    private static final String TEST_FOLDER = "test_folder";
+    private static final String TEST_FOLDER = System.getProperty("java.io.tmpdir") + "/test_folder";
 
     @BeforeEach
     public void setUp() throws IOException {
