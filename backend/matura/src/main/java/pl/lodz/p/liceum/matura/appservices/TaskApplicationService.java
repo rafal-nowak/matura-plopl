@@ -14,6 +14,7 @@ import pl.lodz.p.liceum.matura.domain.task.*;
 import pl.lodz.p.liceum.matura.domain.template.Template;
 import pl.lodz.p.liceum.matura.domain.template.TemplateService;
 import pl.lodz.p.liceum.matura.domain.workspace.Workspace;
+import pl.lodz.p.liceum.matura.utils.SimpleFileLock;
 
 import java.time.Clock;
 import java.time.ZonedDateTime;
@@ -35,19 +36,44 @@ public class TaskApplicationService {
 
     public Map<String, Object> readTaskDefinitionFile(Integer taskId) {
         String workspaceUrl = getWorkspaceUrl(taskId);
-        return workspace.readTaskDefinitionFile(workspaceUrl);
+        try {
+            SimpleFileLock lock = new SimpleFileLock(workspaceUrl, 2);
+            var taskDefinition = workspace.readTaskDefinitionFile(workspaceUrl);
+            lock.releaseLock();
+            return taskDefinition;
+        }
+        catch (Exception e) {
+            throw new FailedToLockTaskDirectoryException();
+        }
     }
 
     public byte[] readFile(Integer taskId) {
         String workspaceUrl = getWorkspaceUrl(taskId);
         String relativePath = getRelativeFilePath(taskId);
-        return workspace.readFile(workspaceUrl, relativePath);
+
+        try {
+            SimpleFileLock lock = new SimpleFileLock(workspaceUrl, 2);
+            var content = workspace.readFile(workspaceUrl, relativePath);
+            lock.releaseLock();
+            return content;
+        }
+        catch (Exception e) {
+            throw new FailedToLockTaskDirectoryException();
+        }
     }
 
     public void writeFile(Integer taskId, byte[] bytes) {
         String workspaceUrl = getWorkspaceUrl(taskId);
         String relativePath = getRelativeFilePath(taskId);
-        workspace.writeFile(workspaceUrl, relativePath, bytes);
+
+        try {
+            SimpleFileLock lock = new SimpleFileLock(workspaceUrl, 2);
+            workspace.writeFile(workspaceUrl, relativePath, bytes);
+            lock.releaseLock();
+        }
+        catch (Exception e) {
+            throw new FailedToLockTaskDirectoryException();
+        }
     }
 
     public String getWorkspaceUrl(Integer taskId) {
