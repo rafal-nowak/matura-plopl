@@ -10,6 +10,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.springframework.beans.factory.annotation.Value;
 import pl.lodz.p.liceum.matura.domain.workspace.*;
+import pl.lodz.p.liceum.matura.utils.SimpleFileLock;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,7 +35,15 @@ public class WorkspaceService implements Workspace {
     public String createWorkspace(String sourceRepositoryUrl) {
         String absoluteDestinationPath = crateDirectoryPath();
         cloneRepository(sourceRepositoryUrl, absoluteDestinationPath);
-        DownloadSio2Jail(absoluteDestinationPath + "/sio2jail");
+
+        try {
+            SimpleFileLock lock = new SimpleFileLock(absoluteDestinationPath, 60);
+            DownloadSio2Jail(absoluteDestinationPath + "/sio2jail");
+            lock.releaseLock();
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Failed to lock the directory", e);
+        }
         return absoluteDestinationPath;
     }
 
