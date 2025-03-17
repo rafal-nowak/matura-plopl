@@ -8,6 +8,7 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
     const [isInitialized, setIsInitialized] = useState(false);
     const [editorInstance, setEditorInstance] = useState(null);
     const completionProviderRef = useRef(null);
+    const hoverProviderRef = useRef(null);
 
     const { sendJsonMessage } = useWebSocket(import.meta.env.VITE_PYLSP_URL, {
         onOpen: () => {
@@ -48,11 +49,27 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
                         });
                     }
 
-                    // if (typeof response.result.contents === "string") {
-                    //     monaco.languages.registerHoverProvider("python", {
-                    //         provideHover: () => ({
-                    //             contents: [{ value: response.result.contents }]
-                    //         })
+                    // if (typeof response.result.contents === "string" || Array.isArray(response.result.contents)) {
+                    //     if(hoverProviderRef.current) {
+                    //         hoverProviderRef.current.dispose();
+                    //     }
+                    //
+                    //     hoverProviderRef.current = monaco.languages.registerHoverProvider("python", {
+                    //         provideHover: (model, position) => {
+                    //             const hoverContent = Array.isArray(response.result.contents)
+                    //                 ? response.result.contents.map((item) => ({ value: item }))
+                    //                 : [{ value: response.result.contents }];
+                    //
+                    //             return {
+                    //                 range: new monaco.Range(
+                    //                     position.lineNumber,
+                    //                     1,
+                    //                     position.lineNumber,
+                    //                     model.getLineLength(position.lineNumber) + 1
+                    //                 ),
+                    //                 contents: hoverContent
+                    //             };
+                    //         }
                     //     });
                     // }
                 }
@@ -97,6 +114,8 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
 
         if (!isInitialized) return;
 
+        const position = editorInstance.getPosition();
+
         sendJsonMessage({
             jsonrpc: "2.0",
             method: "textDocument/didChange",
@@ -106,16 +125,26 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
             },
         });
 
+        // sendJsonMessage({
+        //     jsonrpc: "2.0",
+        //     id: uuidv4(),
+        //     method: "textDocument/hover",
+        //     params: {
+        //         textDocument: { uri: "file://dummy.py" },
+        //         position: {
+        //             line: position.lineNumber - 1,
+        //             character: position.column - 1
+        //         }
+        //     }
+        // });
+
         setTimeout(() => handleCompletion(value), 50);
 
-        const position = editorInstance.getPosition();
         if (!position) return;
 
-        // 📄 Find the line at the caret's position
         const lines = value.split("\n");
         const currentLine = lines[position.lineNumber - 1] || "";
 
-        // 🔥 Trigger suggestion if the last character in the current line is a dot
         if (currentLine.trim().slice(-1) === ".") {
             editorInstance.trigger('keyboard', 'editor.action.triggerSuggest', {});
         }
@@ -124,25 +153,20 @@ export const CodeEditor = ({ language, startingCode, onChangeCallback }) => {
     const handleCompletion = () => {
         if (!isInitialized || !editorInstance) return;
 
-        // Get current cursor position
         const position = editorInstance.getPosition();
 
-        // Ensure position is valid
         if (!position) return;
 
-        // Send completion request to the server with the current position
         sendJsonMessage({
             jsonrpc: "2.0",
             id: uuidv4(),
             method: "textDocument/completion",
             params: {
                 textDocument: { uri: "file://dummy.py" },
-                position: { line: position.lineNumber - 1, character: position.column - 1 }, // Monaco positions are 1-indexed, LSP is 0-indexed
+                position: { line: position.lineNumber - 1, character: position.column - 1 },
             },
         });
     };
-
-    // setTimeout(() => editorInstance.trigger('keyboard', 'editor.action.triggerSuggest', {}), 2500)
 
     return (
         <Editor
