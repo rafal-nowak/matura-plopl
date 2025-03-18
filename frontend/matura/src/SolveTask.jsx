@@ -24,16 +24,16 @@ import * as PropTypes from "prop-types";
 import {LoadingCard} from "./components/LoadingCard.jsx";
 import {TestResult} from "./services/testResultService.js";
 
-const CheckSubtaskMenuItem = ({subtaskNumber, onFastCheck, onFullCheck}) => (
+const CheckSubtaskMenuItem = ({subtaskNumber, onFastCheck, onFullCheck, isSubmitting}) => (
     <div>
         {subtaskNumber !== 1 && <MenuDivider/>}
         <MenuGroup title={`Podzadanie ${subtaskNumber}`}>
-            <MenuItem onClick={onFastCheck}>
+            <MenuItem onClick={onFastCheck} isDisabled={isSubmitting}>
                 <i className="fa-fw fa-solid fa-forward"/>
                 <Text marginLeft="5px">Sprawdzenie szybkie</Text>
             </MenuItem>
 
-            <MenuItem onClick={onFullCheck}>
+            <MenuItem onClick={onFullCheck} isDisabled={isSubmitting}>
                 <i className="fa-fw fa-solid fa-check"/>
                 <Text marginLeft="5px">Sprawdzenie pełne</Text>
             </MenuItem>
@@ -43,7 +43,8 @@ const CheckSubtaskMenuItem = ({subtaskNumber, onFastCheck, onFullCheck}) => (
 CheckSubtaskMenuItem.propTypes = {
     subtaskNumber: PropTypes.number,
     onFastCheck: PropTypes.func,
-    onFullCheck: PropTypes.func
+    onFullCheck: PropTypes.func,
+    isSubmitting: PropTypes.bool
 }
 
 const TestResultAccordionItem = ({testResult, index}) => {
@@ -179,6 +180,8 @@ const SolveTask = () => {
     const [testName, setTestName] = useState('')
     const [testResultsBody, setTestResultsBody] = useState(<></>)
 
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
     const isMobile = useBreakpointValue({ base: true, md: false });
 
     const editorLanguageMapping = {
@@ -213,8 +216,9 @@ const SolveTask = () => {
     if (!loading) {
         for (let i = 1; i <= template.numberOfSubtasks; i++)
             verificationTypes.push(
-                <CheckSubtaskMenuItem key={i} subtaskNumber={i} onFastCheck={() => {
+                <CheckSubtaskMenuItem key={i} isSubmitting={isSubmitting} subtaskNumber={i} onFastCheck={() => {
                     const promise = task.checkSubtask(fileContents, i, 'fast')
+                    setIsSubmitting(true)
 
                     toast.promise(promise, {
                         success: {
@@ -235,9 +239,11 @@ const SolveTask = () => {
                         setTestName(`Szybkie sprawdzenie podzadania ${i}`)
                         setTestResultsBody(<SubtaskResultBody result={result[0]} testResults={result[1]}/>)
                         modalOpen()
+                        setIsSubmitting(false)
                     })
                 }} onFullCheck={() => {
                     const promise = task.checkSubtask(fileContents, i, 'full')
+                    setIsSubmitting(true)
 
                     toast.promise(promise, {
                         success: {
@@ -258,6 +264,7 @@ const SolveTask = () => {
                         setTestName(`Pełne sprawdzenie podzadania ${i}`)
                         setTestResultsBody(<SubtaskResultBody result={result[0]} testResults={result[1]}/>)
                         modalOpen()
+                        setIsSubmitting(false)
                     })
                 }}/>
             )
@@ -322,7 +329,7 @@ const SolveTask = () => {
                                     </MenuList>
                                 </Menu>
 
-                                <Button onClick={() => {
+                                <Button isDisabled={isSubmitting} onClick={() => {
                                     toast.promise(task.saveFile(fileContents), {
                                         success: {
                                             title: 'Zapisano',
@@ -345,8 +352,10 @@ const SolveTask = () => {
                                     <Text marginLeft='5px'>Zapisz</Text>
                                 </Button>
 
-                                <Button onClick={() => {
+                                <Button isDisabled={isSubmitting} onClick={() => {
                                     const promise = task.check(fileContents)
+                                    setIsSubmitting(true)
+
                                     toast.promise(promise, {
                                         success: {
                                             title: 'Sprawdzanie zakończone',
@@ -366,6 +375,7 @@ const SolveTask = () => {
                                         setTestName('Sprawdzenie pełne')
                                         setTestResultsBody(<TaskResultBody results={results}/>)
                                         modalOpen()
+                                        setIsSubmitting(false)
                                     })
                                 }}>
                                     <i className="fa-fw fa-solid fa-check"/>
