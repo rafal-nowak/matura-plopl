@@ -22,21 +22,20 @@ import { Navigate, useNavigate } from "react-router-dom";
 
 const InputField = ({ label, type, ...props }) => {
     const [field, meta] = useField(props);
-
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-        <FormControl id={props.name}>
+        <FormControl id={props.name} mb={4}>
             <FormLabel htmlFor={props.name}>{label}</FormLabel>
             <Flex flexDirection='row'>
                 <Input
                     id={props.id || props.name}
                     name={props.name}
-                    value={field.value || ""} // Ensures controlled behavior
+                    value={field.value || ""}
                     {...field}
                     {...props}
                     type={type !== 'password' ? type : showPassword ? 'text' : 'password'}
-                    autoComplete='1'
+                    autoComplete='on'
                 />
                 {type === 'password' && (
                     <Button
@@ -52,18 +51,18 @@ const InputField = ({ label, type, ...props }) => {
                     </Button>
                 )}
             </Flex>
-            {meta.touched && meta.error ? (
+            {meta.touched && meta.error && (
                 <Alert className='error' status='error' mt='2'>
                     <AlertIcon />
                     {meta.error}
                 </Alert>
-            ) : null}
+            )}
         </FormControl>
     );
 };
 
 InputField.propTypes = {
-    label: PropTypes.object,
+    label: PropTypes.node,
     name: PropTypes.string.isRequired,
     type: PropTypes.string,
     placeholder: PropTypes.string,
@@ -81,40 +80,19 @@ export const RegistrationForm = () => {
 
     return (
         <Formik
-            initialValues={{
-                username: '',
-                email: '',
-                password: '',
-                passwordAgain: ''
-            }}
-
+            initialValues={{ username: '', email: '', password: '', passwordAgain: '' }}
             validationSchema={
                 Yup.object({
-                    username: Yup
-                        .string()
-                        .required("Pole nie może być puste"),
-
-                    email: Yup
-                        .string()
-                        .email("Podana wartość musi być poprawnym adresem email")
-                        .required("Pole nie może być puste"),
-
-                    password: Yup
-                        .string()
-                        .required("Pole nie może być puste"),
-
-                    passwordAgain: Yup
-                        .string()
-                        .oneOf([Yup.ref('password'), null], "Hasła muszą być identyczne")
-                        .required('Pole nie może być puste'),
+                    username: Yup.string().required("Pole nie może być puste"),
+                    email: Yup.string().email("Podana wartość musi być poprawnym adresem email").required("Pole nie może być puste"),
+                    password: Yup.string().required("Pole nie może być puste"),
+                    passwordAgain: Yup.string().oneOf([Yup.ref('password'), null], "Hasła muszą być identyczne").required('Pole nie może być puste'),
                 })
             }
-
             validateOnMount={true}
 
             onSubmit={(values, { setSubmitting }) => {
                 setSubmitting(true);
-
                 register(values.username, values.email, values.password)
                     .then(() => {
                         toast({
@@ -124,12 +102,10 @@ export const RegistrationForm = () => {
                             duration: 4000,
                             isClosable: true,
                         });
-
                         navigate('/dashboard');
                     })
                     .catch((error) => {
-                        console.log(error)
-
+                        console.log(error);
                         toast({
                             title: 'Wystąpił błąd',
                             description: 'Rejestracja nie powiodła się.',
@@ -138,21 +114,19 @@ export const RegistrationForm = () => {
                             isClosable: true,
                         });
                     })
-                    .finally(() => {
-                        setSubmitting(false);
-                    });
+                    .finally(() => setSubmitting(false));
             }}>
 
             {({ isValid, isSubmitting }) => (
                 <Form>
-                    <Flex justifyContent="center" alignItems="center" height="100vh">
-                        <Card variant='elevated' minWidth='50dvw'>
-                            <CardHeader>
+                    <Flex justifyContent="center" alignItems="center" height="100vh" p={4} my={['20px', 0]}>
+                        <Card variant='elevated' width={['90%', '70%', '400px']} maxWidth='400px' padding='25px' boxShadow='xl' borderRadius='xl'>
+                            <CardHeader textAlign='center'>
                                 <Heading>Rejestracja</Heading>
                             </CardHeader>
 
                             <CardBody>
-                                <Stack>
+                                <Stack spacing={4}>
                                     <InputField name='username' label={<><i className="fa-solid fa-user" /> Nazwa użytkownika:</>} type='text' />
                                     <InputField name='email' label={<><i className="fa-solid fa-envelope" /> Adres email:</>} type='email' />
                                     <InputField name='password' label={<><i className="fa-solid fa-lock" /> Hasło:</>} type='password' />
@@ -161,15 +135,24 @@ export const RegistrationForm = () => {
 
                                 <Button
                                     type='submit'
-                                    marginY='25px'
+                                    marginY='10px'
                                     colorScheme='blue'
                                     disabled={!isValid || isSubmitting}
                                     isLoading={isSubmitting}
                                     loadingText='Zarejestruj się'
+                                    width='100%'
                                 >
                                     Zarejestruj się
                                 </Button>
 
+                                <Button
+                                    colorScheme='green'
+                                    variant='outline'
+                                    onClick={() => navigate('/login')}
+                                    width='100%'
+                                >
+                                    Masz już konto? Zaloguj się
+                                </Button>
                             </CardBody>
                         </Card>
                     </Flex>
@@ -178,3 +161,5 @@ export const RegistrationForm = () => {
         </Formik>
     );
 };
+
+export default RegistrationForm;
