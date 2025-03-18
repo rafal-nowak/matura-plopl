@@ -3,7 +3,7 @@ import {useNavigate, useSearchParams} from "react-router-dom";
 import {Subpage} from "./components/Subpage.jsx";
 import {useEffect, useState} from "react";
 import {
-    Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box,
+    Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Alert, AlertIcon, Box,
     Button, Code,
     Flex, Menu,
     MenuButton,
@@ -12,7 +12,7 @@ import {
     MenuItem,
     MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay,
     Stack,
-    Text, useDisclosure,
+    Text, useBreakpointValue, useDisclosure,
     useToast,
     VStack
 } from "@chakra-ui/react";
@@ -179,6 +179,8 @@ const SolveTask = () => {
     const [testName, setTestName] = useState('')
     const [testResultsBody, setTestResultsBody] = useState(<></>)
 
+    const isMobile = useBreakpointValue({ base: true, md: false });
+
     const editorLanguageMapping = {
         'PYTHON': 'python',
         'C_SHARP': 'csharp',
@@ -263,9 +265,31 @@ const SolveTask = () => {
 
     return (
         <Subpage>
-            {loading && <LoadingCard/>}
+            {isMobile && (
+                <>
+                    <Alert status="info" mb={6} borderRadius="md" boxShadow="lg" p={4}>
+                        <AlertIcon boxSize="40px" mr={4} />
+                        <VStack align="flex-start">
+                            <Text fontSize="lg" fontWeight="bold" color="teal.600">
+                                Używanie edytora kodu na telefonie jest trudne!
+                            </Text>
+                            <Text fontSize="md" textAlign="left">
+                                Ten edytor kodu jest zoptymalizowany do używania na komputerze. Korzystanie z niego na telefonie może być bardzo niewygodne i trudne.
+                                <br/>
+                                Prosimy o dostęp do tej strony z urządzenia z większym ekranem, aby zapewnić najlepsze doświadczenia z korzystania ze strony.
+                            </Text>
+                        </VStack>
+                    </Alert>
 
-            {!loading && (
+                    <Button onClick={() => navigate(-1)} colorScheme="teal" size="lg" leftIcon={<i className="fa-solid fa-arrow-left"></i>}>
+                        Wróć na poprzednią stronę
+                    </Button>
+                </>
+            )}
+
+            {!isMobile && loading && <LoadingCard/>}
+
+            {!isMobile && !loading && (
                 <>
                     <Modal isOpen={modalIsOpen} onClose={modalClose}>
                         <ModalOverlay/>
