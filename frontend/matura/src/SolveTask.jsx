@@ -3,7 +3,7 @@ import {useNavigate, useSearchParams} from "react-router-dom";
 import {Subpage} from "./components/Subpage.jsx";
 import {useEffect, useState} from "react";
 import {
-    Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box,
+    Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Alert, AlertIcon, Box,
     Button, Code,
     Flex, Menu,
     MenuButton,
@@ -12,7 +12,7 @@ import {
     MenuItem,
     MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay,
     Stack,
-    Text, useDisclosure,
+    Text, useBreakpointValue, useDisclosure,
     useToast,
     VStack
 } from "@chakra-ui/react";
@@ -24,16 +24,16 @@ import * as PropTypes from "prop-types";
 import {LoadingCard} from "./components/LoadingCard.jsx";
 import {TestResult} from "./services/testResultService.js";
 
-const CheckSubtaskMenuItem = ({subtaskNumber, onFastCheck, onFullCheck}) => (
+const CheckSubtaskMenuItem = ({subtaskNumber, onFastCheck, onFullCheck, isSubmitting}) => (
     <div>
         {subtaskNumber !== 1 && <MenuDivider/>}
         <MenuGroup title={`Podzadanie ${subtaskNumber}`}>
-            <MenuItem onClick={onFastCheck}>
+            <MenuItem onClick={onFastCheck} isDisabled={isSubmitting}>
                 <i className="fa-fw fa-solid fa-forward"/>
                 <Text marginLeft="5px">Sprawdzenie szybkie</Text>
             </MenuItem>
 
-            <MenuItem onClick={onFullCheck}>
+            <MenuItem onClick={onFullCheck} isDisabled={isSubmitting}>
                 <i className="fa-fw fa-solid fa-check"/>
                 <Text marginLeft="5px">Sprawdzenie pełne</Text>
             </MenuItem>
@@ -43,7 +43,8 @@ const CheckSubtaskMenuItem = ({subtaskNumber, onFastCheck, onFullCheck}) => (
 CheckSubtaskMenuItem.propTypes = {
     subtaskNumber: PropTypes.number,
     onFastCheck: PropTypes.func,
-    onFullCheck: PropTypes.func
+    onFullCheck: PropTypes.func,
+    isSubmitting: PropTypes.bool
 }
 
 const TestResultAccordionItem = ({testResult, index}) => {
@@ -179,6 +180,10 @@ const SolveTask = () => {
     const [testName, setTestName] = useState('')
     const [testResultsBody, setTestResultsBody] = useState(<></>)
 
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
+    const isMobile = useBreakpointValue({ base: true, md: false });
+
     const editorLanguageMapping = {
         'PYTHON': 'python',
         'C_SHARP': 'csharp',
@@ -211,8 +216,9 @@ const SolveTask = () => {
     if (!loading) {
         for (let i = 1; i <= template.numberOfSubtasks; i++)
             verificationTypes.push(
-                <CheckSubtaskMenuItem key={i} subtaskNumber={i} onFastCheck={() => {
+                <CheckSubtaskMenuItem key={i} isSubmitting={isSubmitting} subtaskNumber={i} onFastCheck={() => {
                     const promise = task.checkSubtask(fileContents, i, 'fast')
+                    setIsSubmitting(true)
 
                     toast.promise(promise, {
                         success: {
@@ -233,9 +239,11 @@ const SolveTask = () => {
                         setTestName(`Szybkie sprawdzenie podzadania ${i}`)
                         setTestResultsBody(<SubtaskResultBody result={result[0]} testResults={result[1]}/>)
                         modalOpen()
+                        setIsSubmitting(false)
                     })
                 }} onFullCheck={() => {
                     const promise = task.checkSubtask(fileContents, i, 'full')
+                    setIsSubmitting(true)
 
                     toast.promise(promise, {
                         success: {
@@ -256,6 +264,7 @@ const SolveTask = () => {
                         setTestName(`Pełne sprawdzenie podzadania ${i}`)
                         setTestResultsBody(<SubtaskResultBody result={result[0]} testResults={result[1]}/>)
                         modalOpen()
+                        setIsSubmitting(false)
                     })
                 }}/>
             )
@@ -263,9 +272,31 @@ const SolveTask = () => {
 
     return (
         <Subpage>
-            {loading && <LoadingCard/>}
+            {isMobile && (
+                <>
+                    <Alert status="info" mb={6} borderRadius="md" boxShadow="lg" p={4}>
+                        <AlertIcon boxSize="40px" mr={4} />
+                        <VStack align="flex-start">
+                            <Text fontSize="lg" fontWeight="bold" color="teal.600">
+                                Używanie edytora kodu na telefonie jest trudne!
+                            </Text>
+                            <Text fontSize="md" textAlign="left">
+                                Ten edytor kodu jest zoptymalizowany do używania na komputerze. Korzystanie z niego na telefonie może być bardzo niewygodne i trudne.
+                                <br/>
+                                Prosimy o dostęp do tej strony z urządzenia z większym ekranem, aby zapewnić najlepsze doświadczenia z korzystania ze strony.
+                            </Text>
+                        </VStack>
+                    </Alert>
 
-            {!loading && (
+                    <Button onClick={() => navigate(-1)} colorScheme="teal" size="lg" leftIcon={<i className="fa-solid fa-arrow-left"></i>}>
+                        Wróć na poprzednią stronę
+                    </Button>
+                </>
+            )}
+
+            {!isMobile && loading && <LoadingCard/>}
+
+            {!isMobile && !loading && (
                 <>
                     <Modal isOpen={modalIsOpen} onClose={modalClose}>
                         <ModalOverlay/>
@@ -298,7 +329,7 @@ const SolveTask = () => {
                                     </MenuList>
                                 </Menu>
 
-                                <Button onClick={() => {
+                                <Button isDisabled={isSubmitting} onClick={() => {
                                     toast.promise(task.saveFile(fileContents), {
                                         success: {
                                             title: 'Zapisano',
@@ -321,8 +352,10 @@ const SolveTask = () => {
                                     <Text marginLeft='5px'>Zapisz</Text>
                                 </Button>
 
-                                <Button onClick={() => {
+                                <Button isDisabled={isSubmitting} onClick={() => {
                                     const promise = task.check(fileContents)
+                                    setIsSubmitting(true)
+
                                     toast.promise(promise, {
                                         success: {
                                             title: 'Sprawdzanie zakończone',
@@ -342,6 +375,7 @@ const SolveTask = () => {
                                         setTestName('Sprawdzenie pełne')
                                         setTestResultsBody(<TaskResultBody results={results}/>)
                                         modalOpen()
+                                        setIsSubmitting(false)
                                     })
                                 }}>
                                     <i className="fa-fw fa-solid fa-check"/>

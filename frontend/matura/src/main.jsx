@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
-import {createBrowserRouter, Navigate, RouterProvider} from "react-router-dom";
+import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import LoginForm from "./LoginForm.jsx";
 import {ChakraProvider} from "@chakra-ui/react";
 import {DashboardWithAuth} from "./Dashboard.jsx";
@@ -12,11 +12,12 @@ import SolveTaskWithAuth from "./SolveTask.jsx";
 import {FinishedTasksWithAuth} from "./FinishedTasks.jsx";
 import {ErrorElement} from "./ErrorElement.jsx";
 import {RegistrationForm} from './RegistrationForm.jsx';
+import {Home} from "./Home.jsx";
 
 const router = createBrowserRouter([
     {
         path: '/',
-        element: <Navigate to={'/login'}/>,
+        element: <Home/>,
         errorElement: <ErrorElement/>
     },
     {
