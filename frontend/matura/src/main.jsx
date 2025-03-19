@@ -12,11 +12,12 @@ import SolveTaskWithAuth from "./SolveTask.jsx";
 import {FinishedTasksWithAuth} from "./FinishedTasks.jsx";
 import {ErrorElement} from "./ErrorElement.jsx";
 import {RegistrationForm} from './RegistrationForm.jsx';
+import {Home} from "./Home.jsx";
 
 const router = createBrowserRouter([
     {
         path: '/',
-        element: <Navigate to={'/login'}/>,
+        element: <Home/>,
         errorElement: <ErrorElement/>
     },
     {
