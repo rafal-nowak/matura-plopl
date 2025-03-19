@@ -7,41 +7,49 @@ import {
     Heading,
     Image,
     Text,
-    VStack
+    VStack,
+    Stack,
+    Divider
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
+import { FaCheckCircle } from "react-icons/fa";
+import { FaLaptopCode, FaRocket } from "react-icons/fa6";
+import { motion } from "framer-motion";
 
 export const Home = () => {
     const logoPath = "logo.png";
+    const darkBlue = "#0B132B";
+    const accentColor = "#FFD700";
+    const darkSlateBlue = "#1C2541";
+    const lightCharcoal = "#3A506B";
 
-    const darkBlue = "#121C2B";
-    const accentColor = "#C8A500";
-    const darkSlateBlue = "#2E3A47";
-    const lightCharcoal = "#5A5C61";
+    const fadeIn = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.8 } }
+    };
 
     return (
         <DarkMode>
             <Box bg={darkBlue} color="white">
-                <Flex as="nav" bg={darkBlue} color="white" p={6} justify="space-between" align="center">
-                    <Image src={logoPath} alt="CheckIT Logo" boxSize="50px" />
+                <Flex as="nav" bg={darkBlue} p={6} justify="space-between" align="center">
+                    <Image src={logoPath} alt="CheckIT Logo" boxSize="60px" />
                     <Flex>
-                        <Button as={Link} to="/login" colorScheme="yellow" variant="outline" mx={3} _hover={{ bg: accentColor }}>
+                        <Button as={Link} to="/login" colorScheme="yellow" variant="solid" mx={2}>
                             Zaloguj się
                         </Button>
-                        <Button as={Link} to="/register" colorScheme="yellow" mx={3} _hover={{ bg: accentColor }}>
+                        <Button as={Link} to="/register" colorScheme="yellow" mx={2}>
                             Zarejestruj się
                         </Button>
                     </Flex>
                 </Flex>
 
-                <Box py={24} textAlign="center" bg={darkSlateBlue}>
+                <Box py={28} textAlign="center" bg={darkSlateBlue} as={motion.div} initial="hidden" animate="visible" variants={fadeIn}>
                     <Container maxW="6xl">
-                        <Heading as="h1" size="3xl" mb={4} color="white">
+                        <Heading as="h1" size={["3xl", "4xl"]} mb={4}>
                             Sprawdź swoje umiejętności z CheckIT!
                         </Heading>
-                        <Text fontSize="xl" mb={8} color={lightCharcoal}>
-                            Narzędzie do automatycznego sprawdzania zadań maturalnych z informatyki. Pomagamy Ci
-                            przygotować się na maturę!
+                        <Text fontSize="xl" mb={8}>
+                            Przygotuj się szybko i skutecznie do matury z informatyki!
                         </Text>
                         <Button colorScheme="yellow" size="lg" as={Link} to="/register" _hover={{ bg: accentColor }}>
                             Rozpocznij naukę
@@ -49,90 +57,60 @@ export const Home = () => {
                     </Container>
                 </Box>
 
-                <Box py={16} bg={lightCharcoal}>
+                <Box py={20} bg={lightCharcoal}>
                     <Container maxW="6xl">
                         <Heading as="h2" size="2xl" textAlign="center" mb={12}>
-                            Co oferuje CheckIT?
+                            Dlaczego warto wybrać CheckIT?
                         </Heading>
-                        <Flex
-                            wrap="wrap"
-                            justify="center"
-                            gap={6}
-                            mx={{ base: 4, md: 0 }}
-                        >
-                            <VStack align="center" spacing={6} maxW="300px" mb={{ base: 8, md: 0 }}>
-                                <Box
-                                    bg={darkBlue}
-                                    p={8}
-                                    borderRadius="md"
-                                    boxShadow="lg"
-                                    width="100%"
-                                    mb={6}
-                                >
-                                    <Heading as="h3" size="lg" color="white" mb={4}>
-                                        Edytor kodu w czasie rzeczywistym
-                                    </Heading>
-                                    <Text color="white" textAlign="center">
-                                        Pisanie kodu z funkcją autouzupełniania.
-                                        Szybkie i łatwe przygotowanie rozwiązania.
-                                    </Text>
-                                </Box>
-                            </VStack>
-                            <VStack align="center" spacing={6} maxW="300px" mb={{ base: 8, md: 0 }}>
-                                <Box
-                                    bg={darkBlue}
-                                    p={8}
-                                    borderRadius="md"
-                                    boxShadow="lg"
-                                    width="100%"
-                                    mb={6}
-                                >
-                                    <Heading as="h3" size="lg" color="white" mb={4}>
-                                        Automatyczne sprawdzanie zadań
-                                    </Heading>
-                                    <Text color="white" textAlign="center">
-                                        Nasz system automatycznie sprawdza zadania na podstawie wyników Twojego
-                                        programu. Szybka i precyzyjna ocena!
-                                    </Text>
-                                </Box>
-                            </VStack>
-                            <VStack align="center" spacing={6} maxW="300px" mb={{ base: 8, md: 0 }}>
-                                <Box
-                                    bg={darkBlue}
-                                    p={8}
-                                    borderRadius="md"
-                                    boxShadow="lg"
-                                    width="100%"
-                                    mb={6}
-                                >
-                                    <Heading as="h3" size="lg" color="white" mb={4}>
-                                        Zadania maturalne
-                                    </Heading>
-                                    <Text color="white" textAlign="center">
-                                        Wybierz zadanie z maturalnych arkuszy, rozwiąż je i sprawdzaj swoje
-                                        umiejętności w każdej chwili!
-                                    </Text>
-                                </Box>
-                            </VStack>
-                        </Flex>
+                        <Stack direction={{ base: "column", md: "row" }} spacing={8} justify="center">
+                            {[{
+                                icon: FaLaptopCode,
+                                title: "Intuicyjny edytor kodu",
+                                description: "Pisanie kodu z autouzupełnianiem w Pythonie i nie tylko. Stwórz rozwiązanie bez trudu."
+                            }, {
+                                icon: FaCheckCircle,
+                                title: "Błyskawiczna Weryfikacja",
+                                description: "Automatyczne sprawdzanie zadań pozwala szybko ocenić poprawność Twoich rozwiązań."
+                            }, {
+                                icon: FaRocket,
+                                title: "Przygotowanie do Matury",
+                                description: "Rozwiązuj zadania maturalne i zdobądź pewność siebie przed egzaminem."
+                            }].map(({ icon: Icon, title, description }) => (
+                                <VStack key={title} align="center" spacing={6} maxW="400px">
+                                    <Box
+                                        bg={darkSlateBlue}
+                                        p={8}
+                                        borderRadius="2xl"
+                                        boxShadow="2xl"
+                                        width="100%"
+                                        as={motion.div}
+                                        whileHover={{ scale: 1.05 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <Icon size="40px" color={accentColor} />
+                                        <Heading as="h3" size="lg" my={4}>{title}</Heading>
+                                        <Text>{description}</Text>
+                                    </Box>
+                                </VStack>
+                            ))}
+                        </Stack>
                     </Container>
                 </Box>
 
-
-                <Box py={24} bg={darkSlateBlue}>
+                <Box py={20} bg={darkSlateBlue}>
                     <Container maxW="6xl">
                         <Heading as="h2" size="2xl" textAlign="center" mb={8}>
                             Nasi Partnerzy
                         </Heading>
-                        <Flex justify="center" wrap="wrap" gap={8}>
+                        <Flex justify="center" wrap="wrap" gap={6}>
                             <Box maxW="200px" p={4} textAlign="center">
-                                <Image src="zwolnieni-z-teorii-logo.png" alt="Logo Zwolnionych z Teorii"
-                                       maxW="100%" />
+                                <Image src="ZzT_logo.png" alt="Zwolnieni z Teorii Logo" maxW="100%" />
                             </Box>
                         </Flex>
                     </Container>
                 </Box>
 
+                <Divider />
                 <Box bg={darkBlue} color="white" py={6} textAlign="center">
                     <Text color={lightCharcoal}>&copy; 2025 CheckIT - Wszystkie prawa zastrzeżone.</Text>
                 </Box>
