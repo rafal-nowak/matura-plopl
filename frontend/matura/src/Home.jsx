@@ -12,7 +12,7 @@ import {
     Divider
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
-import { FaCheckCircle } from "react-icons/fa";
+import {FaCheckCircle, FaFacebook, FaInstagram} from "react-icons/fa";
 import { FaLaptopCode, FaRocket } from "react-icons/fa6";
 import { motion } from "framer-motion";
 
@@ -112,9 +112,36 @@ export const Home = () => {
 
                 <Divider />
                 <Box bg={darkBlue} color="white" py={6} textAlign="center">
+                    <Flex justify="center" gap={6} mb={4}>
+                        <Button
+                            as="a"
+                            href="https://www.facebook.com/profile.php?id=61574580353774"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            colorScheme="yellow"
+                            size="lg"
+                            leftIcon={<FaFacebook/>}
+                            _hover={{ bg: accentColor, transform: "scale(1.1)" }}
+                        >
+                            Facebook
+                        </Button>
+                        <Button
+                            as="a"
+                            href="https://www.instagram.com/matura.checkit/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            colorScheme="pink"
+                            size="lg"
+                            leftIcon={<FaInstagram/>}
+                            _hover={{ bg: "#E1306C", transform: "scale(1.1)" }}
+                        >
+                            Instagram
+                        </Button>
+                    </Flex>
                     <Text color={lightCharcoal}>&copy; 2025 CheckIT - Wszystkie prawa zastrzeżone.</Text>
                 </Box>
             </Box>
+
         </DarkMode>
     );
 };
