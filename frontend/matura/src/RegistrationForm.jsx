@@ -76,6 +76,7 @@ export const RegistrationForm = () => {
     try {
         if (User.fromLocalStorage() !== null && User.fromLocalStorage().validate())
             return <Navigate to='/dashboard' />;
+        // eslint-disable-next-line no-unused-vars
     } catch (e) { /* empty */ }
 
     return (
