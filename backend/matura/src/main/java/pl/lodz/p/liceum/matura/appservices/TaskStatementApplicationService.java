@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,13 +28,9 @@ public class TaskStatementApplicationService {
             connection.setRequestMethod("GET");
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder responseBuilder = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                responseBuilder.append(line);
-            }
+            String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
             reader.close();
-            return responseBuilder.toString();
+            return content;
         } catch (IOException e) {
             throw new TaskStatementCannotBeReadException();
         }
