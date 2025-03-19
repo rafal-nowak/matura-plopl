@@ -8,7 +8,7 @@ export const RenderMarkdown = ({document}) =>
             borderRadius="md"
             maxWidth="95%"
             width="full"
-            marginX="25px"
+            marginX={["5px", "25px"]}
             borderColor='gray'
             borderWidth="1px"
             borderStyle="solid"

@@ -92,15 +92,25 @@ const TemplateCard = ({ template, ...props }) => {
                 </CardHeader>
 
                 <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                    <ModalOverlay/>
-                    <ModalContent maxWidth="80dvw">
-                        <ModalHeader>Polecenie</ModalHeader>
-                        <ModalCloseButton/>
-                        <ModalBody>
+                    <ModalOverlay />
+                    <ModalContent
+                        maxWidth={["90%", "80%", "70%"]}
+                        w="auto"
+                        mx="auto"
+                        p={4}
+                        my={["15px", "auto"]}
+                    >
+                        <ModalHeader textAlign="center">Polecenie</ModalHeader>
+                        <ModalCloseButton />
+                        <ModalBody
+                            overflowY="auto"
+                            p={3}
+                        >
                             <RenderMarkdown document={template.statement} />
                         </ModalBody>
                     </ModalContent>
                 </Modal>
+
             </Card>
         </MotionBox>
     );
