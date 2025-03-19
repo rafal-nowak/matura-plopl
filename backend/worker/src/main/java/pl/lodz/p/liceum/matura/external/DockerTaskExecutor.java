@@ -23,6 +23,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -144,6 +145,9 @@ public class DockerTaskExecutor implements TaskExecutor {
                 String message = "Process exited with code " + userExitCode + "\n"
                         + readStandardError(errorLogs.toString());
                 testResult.setMessage(message);
+                return false;
+            } else if (verdict.equalsIgnoreCase("RV")) {
+                testResult.setVerdict(Verdict.RULES_VIOLATION);
                 return false;
             } else if (!verdict.equalsIgnoreCase("OK")) {
                 testResult.setVerdict(Verdict.SYSTEM_ERROR);
@@ -316,8 +320,7 @@ public class DockerTaskExecutor implements TaskExecutor {
             lock.releaseLock();
 
             return results;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.info("Failed to lock the directory");
             e.printStackTrace();
 
