@@ -127,42 +127,52 @@ SubtaskResultBody.propTypes = {
     testResults: PropTypes.arrayOf(TestResult)
 }
 
-const TaskResultBody = ({results}) => (
-    <VStack align='start'>
-        <Text as='b' mb='5px'>Zaliczono {Math.floor(
+const TaskResultBody = ({results, setIsCompleted}) => {
+    useEffect(() => {
+        const completionPercentage = Math.floor(
             results.reduce((sum, result) => sum + result[0].score, 0) / results.length
-        )}% testów.</Text>
+        );
+        setIsCompleted(completionPercentage === 100);
+    }, [results, setIsCompleted]);
 
-        <Text>Wyniki:</Text>
-        <Accordion allowToggle w='100%'>
-            {results.map((result, idx) => (
-                <AccordionItem key={idx}>
-                    <h2>
-                        <AccordionButton>
-                            <Box as='span' flex="1" textAlign="left" color={result[0].score === 100? 'green' : 'red'}>
-                                Zadanie {idx + 1}: {result[0].score}%
-                            </Box>
-                            <AccordionIcon/>
-                        </AccordionButton>
-                    </h2>
-                    <AccordionPanel>
-                        <Accordion width='100%' allowToggle>
-                            {result[1].map((testResult, index) => (
-                                <TestResultAccordionItem testResult={testResult} index={index + 1} key={index}/>
-                            ))}
-                        </Accordion>
-                    </AccordionPanel>
-                </AccordionItem>
-            ))}
-        </Accordion>
+    return (
+        <VStack align='start'>
+            <Text as='b' mb='5px'>Zaliczono {Math.floor(
+                results.reduce((sum, result) => sum + result[0].score, 0) / results.length
+            )}% testów.</Text>
 
-    </VStack>
-)
+            <Text>Wyniki:</Text>
+            <Accordion allowToggle w='100%'>
+                {results.map((result, idx) => (
+                    <AccordionItem key={idx}>
+                        <h2>
+                            <AccordionButton>
+                                <Box as='span' flex="1" textAlign="left"
+                                     color={result[0].score === 100 ? 'green' : 'red'}>
+                                    Zadanie {idx + 1}: {result[0].score}%
+                                </Box>
+                                <AccordionIcon/>
+                            </AccordionButton>
+                        </h2>
+                        <AccordionPanel>
+                            <Accordion width='100%' allowToggle>
+                                {result[1].map((testResult, index) => (
+                                    <TestResultAccordionItem testResult={testResult} index={index + 1} key={index}/>
+                                ))}
+                            </Accordion>
+                        </AccordionPanel>
+                    </AccordionItem>
+                ))}
+            </Accordion>
+        </VStack>
+    );
+};
 TaskResultBody.propTypes = {
     results: PropTypes.arrayOf(PropTypes.shape({
         subtaskResult: PropTypes.instanceOf(SubtaskResult),
         testResults: PropTypes.arrayOf(TestResult)
-    }))
+    })),
+    setIsCompleted: PropTypes.func
 }
 
 const SolveTask = () => {
@@ -182,7 +192,7 @@ const SolveTask = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false)
 
-    const isMobile = useBreakpointValue({ base: true, md: false });
+    const isMobile = useBreakpointValue({base: true, md: false});
 
     const editorLanguageMapping = {
         'PYTHON': 'python',
@@ -190,6 +200,14 @@ const SolveTask = () => {
         'CPP': 'cpp',
         'JAVA': 'java'
     }
+
+    const [isCompleted, setIsCompleted] = useState(false);
+    const handleModalClose = () => {
+        modalClose();
+        if (isCompleted) {
+            navigate('/tasklist');
+        }
+    };
 
     let verificationTypes = []
 
@@ -235,12 +253,13 @@ const SolveTask = () => {
                         }
                     })
 
-                    promise.then(result => {
-                        setTestName(`Szybkie sprawdzenie podzadania ${i}`)
-                        setTestResultsBody(<SubtaskResultBody result={result[0]} testResults={result[1]}/>)
-                        modalOpen()
-                        setIsSubmitting(false)
-                    })
+                    promise
+                        .then(result => {
+                            setTestName(`Szybkie sprawdzenie podzadania ${i}`)
+                            setTestResultsBody(<SubtaskResultBody result={result[0]} testResults={result[1]}/>)
+                            modalOpen()
+                        })
+                        .finally(() => setIsSubmitting(false))
                 }} onFullCheck={() => {
                     const promise = task.checkSubtask(fileContents, i, 'full')
                     setIsSubmitting(true)
@@ -275,20 +294,23 @@ const SolveTask = () => {
             {isMobile && (
                 <>
                     <Alert status="info" mb={6} borderRadius="md" boxShadow="lg" p={4}>
-                        <AlertIcon boxSize="40px" mr={4} />
+                        <AlertIcon boxSize="40px" mr={4}/>
                         <VStack align="flex-start">
                             <Text fontSize="lg" fontWeight="bold" color="teal.600">
                                 Używanie edytora kodu na telefonie jest trudne!
                             </Text>
                             <Text fontSize="md" textAlign="left">
-                                Ten edytor kodu jest zoptymalizowany do używania na komputerze. Korzystanie z niego na telefonie może być bardzo niewygodne i trudne.
+                                Ten edytor kodu jest zoptymalizowany do używania na komputerze. Korzystanie z niego na
+                                telefonie może być bardzo niewygodne i trudne.
                                 <br/>
-                                Prosimy o dostęp do tej strony z urządzenia z większym ekranem, aby zapewnić najlepsze doświadczenia z korzystania ze strony.
+                                Prosimy o dostęp do tej strony z urządzenia z większym ekranem, aby zapewnić najlepsze
+                                doświadczenia z korzystania ze strony.
                             </Text>
                         </VStack>
                     </Alert>
 
-                    <Button onClick={() => navigate(-1)} colorScheme="teal" size="lg" leftIcon={<i className="fa-solid fa-arrow-left"></i>}>
+                    <Button onClick={() => navigate(-1)} colorScheme="teal" size="lg"
+                            leftIcon={<i className="fa-solid fa-arrow-left"></i>}>
                         Wróć na poprzednią stronę
                     </Button>
                 </>
@@ -308,6 +330,13 @@ const SolveTask = () => {
                             </ModalBody>
 
                             <ModalFooter>
+                                {isCompleted ? (
+                                    <Button colorScheme="green" onClick={() => navigate('/tasks')}>
+                                        Zadanie zakończone! Przejdź do listy zadań
+                                    </Button>
+                                ) : (
+                                    <Button onClick={handleModalClose}>Zamknij</Button>
+                                )}
                             </ModalFooter>
                         </ModalContent>
                     </Modal>
@@ -371,12 +400,14 @@ const SolveTask = () => {
                                         }
                                     })
 
-                                    promise.then(results => {
-                                        setTestName('Sprawdzenie pełne')
-                                        setTestResultsBody(<TaskResultBody results={results}/>)
-                                        modalOpen()
-                                        setIsSubmitting(false)
-                                    })
+                                    promise
+                                        .then(results => {
+                                            setTestName('Sprawdzenie pełne')
+                                            setTestResultsBody(<TaskResultBody results={results}
+                                                                               setIsCompleted={setIsCompleted}/>)
+                                            modalOpen()
+                                        })
+                                        .finally(() => setIsSubmitting(false))
                                 }}>
                                     <i className="fa-fw fa-solid fa-check"/>
                                     <Text marginLeft='5px'>Sprawdź</Text>
