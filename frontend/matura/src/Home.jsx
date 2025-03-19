@@ -17,7 +17,7 @@ import { FaLaptopCode, FaRocket } from "react-icons/fa6";
 import { motion } from "framer-motion";
 
 export const Home = () => {
-    const logoPath = "logo.png";
+    const logoPath = "/logo.png";
     const darkBlue = "#0B132B";
     const accentColor = "#FFD700";
     const darkSlateBlue = "#1C2541";
@@ -104,7 +104,7 @@ export const Home = () => {
                         </Heading>
                         <Flex justify="center" wrap="wrap" gap={6}>
                             <Box maxW="200px" p={4} textAlign="center">
-                                <Image src="ZzT_logo.png" alt="Zwolnieni z Teorii Logo" maxW="100%" />
+                                <Image src="/ZzT_logo.png" alt="Zwolnieni z Teorii Logo" maxW="100%" />
                             </Box>
                         </Flex>
                     </Container>
