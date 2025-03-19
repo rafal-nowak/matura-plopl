@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
-import {createBrowserRouter, Navigate, RouterProvider} from "react-router-dom";
+import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import LoginForm from "./LoginForm.jsx";
 import {ChakraProvider} from "@chakra-ui/react";
 import {DashboardWithAuth} from "./Dashboard.jsx";
