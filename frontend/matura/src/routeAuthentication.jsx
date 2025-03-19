@@ -13,7 +13,8 @@ const isAuthenticated = () => {
 
 export const withAuthentication = (Component, requiredPermission = 'STUDENT') => {
     return function WithAuthenticationWrapper(props) {
-        return (!isAuthenticated() || permissionLevels[User.fromLocalStorage().role] < permissionLevels[requiredPermission])?
-            <Navigate to='/login'/> : <Component {...props} />
+        // return (!isAuthenticated() || permissionLevels[User.fromLocalStorage().role] < permissionLevels[requiredPermission])?
+        //     <Navigate to='/login'/> : <Component {...props} />
+        return <Component {...props} />;
     };
 };
