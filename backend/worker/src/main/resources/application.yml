@@ -13,14 +13,23 @@ management:
     readinessState:
       enabled: true
 
-spring:
-  application:
-    name: receiver
-
 server:
   port: 8081
   error:
     include-message: always
+
+spring:
+  application:
+    name: receiver
+  kafka:
+    consumer:
+      group-id: group_json
+    listener:
+      type: single
+      ack-mode: manual
+    producer:
+      acks: all
+      transaction-id-prefix: worker-tx-
 
 kafka:
   bootstrap-servers: 127.0.0.1:9092
