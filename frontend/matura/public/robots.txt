@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /tasks
+Disallow: /solve
+Disallow: /activeTasks
+Disallow: /finishedTasks
+Allow: /
+
+Sitemap: https://matura.it4u.app/sitemap.xml
