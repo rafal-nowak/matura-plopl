@@ -13,16 +13,13 @@ public class KafkaTaskEvent {
 
     private final KafkaProperties kafkaProperties;
     private KafkaTemplate<String, TaskEvent> kafkaTemplate;
+    static private Long counter = 0L;
 
     public String send(TaskEvent taskEvent) {
-        kafkaTemplate.send(kafkaProperties.getCommandTopic(), taskEvent);
+        counter++;
+        String key = "key-" + counter;  // Unique key
+        kafkaTemplate.send(kafkaProperties.getCommandTopic(), key, taskEvent);
 
-        return "TaskEvent Send Successfully";
-    }
-
-    public String send(TaskSentForProcessingEvent event) {
-        kafkaTemplate.send(kafkaProperties.getCommandTopic(), event);
-
-        return "TaskSentForProcessingEvent Send Successfully";
+        return "TaskEvent sent successfully";
     }
 }

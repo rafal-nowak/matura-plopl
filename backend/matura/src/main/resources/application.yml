@@ -29,6 +29,12 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: true
+  kafka:
+    consumer:
+      group-id: group_json
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      isolation-level: read_committed  # Używaj tylko skommitowanych danych
 
 server:
   port: 8080
