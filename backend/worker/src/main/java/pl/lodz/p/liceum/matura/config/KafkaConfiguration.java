@@ -13,6 +13,7 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import pl.lodz.p.liceum.matura.external.worker.task.events.TaskEvent;
@@ -51,6 +52,7 @@ public class KafkaConfiguration {
     public ConcurrentKafkaListenerContainerFactory<String, TaskEvent> taskKafkaListenerFactory(KafkaProperties kafkaProperties) {
         ConcurrentKafkaListenerContainerFactory<String, TaskEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(taskConsumerFactory(kafkaProperties));
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
         return factory;
     }
 
@@ -62,7 +64,10 @@ public class KafkaConfiguration {
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
-        return new DefaultKafkaProducerFactory<>(config);
+        var producerFactory = new DefaultKafkaProducerFactory<String, TaskEvent>(config);
+        producerFactory.setTransactionIdPrefix("worker-tx-"); // If you know how to do this properly then feel free to do so
+
+        return producerFactory;
     }
 
 
