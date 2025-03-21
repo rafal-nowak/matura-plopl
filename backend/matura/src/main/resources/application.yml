@@ -31,7 +31,7 @@ spring:
     show-sql: true
   kafka:
     consumer:
-      group-id: group_json
+      group-id: matura-api-group
       enable-auto-commit: false
       auto-offset-reset: earliest
       isolation-level: read_committed  # Używaj tylko skommitowanych danych
@@ -45,8 +45,8 @@ kafka:
   bootstrap-servers: 127.0.0.1:9092
   group-id: group_json
   trusted-packages: "*"
-  command-topic: Kafka_Task_json
-  report-topic: Kafka_Task_Report_json
+  command-topic: kafka-task-json
+  report-topic: kafka-task-report-json
 
 volume:
   path: ./tmp/files/
