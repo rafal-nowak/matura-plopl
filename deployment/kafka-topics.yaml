@@ -1,0 +1,51 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: commands
+  namespace: kafka  # Upewnij się, że jest to właściwa przestrzeń nazw
+  labels:
+    strimzi.io/cluster: my-cluster  # Nazwa klastra Kafki
+spec:
+  partitions: 3  # Liczba partycji
+  replicas: 1    # Liczba replik (1, bo masz jeden broker w single-node)
+  config:
+    retention.ms: 604800000  # 7 dni (opcjonalnie)
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: results
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: 604800000
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kafka-task-json
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: 604800000
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kafka-task-report-json
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: 604800000
