@@ -16,6 +16,22 @@ management:
 spring:
   application:
     name: receiver
+  kafka:
+    consumer:
+      group-id: matura-worker-group
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      isolation-level: read_committed
+      max-poll-records: 1
+      heartbeat-interval: 1000
+      session-timeout-ms: 10000
+      max-poll-interval-ms: 300000
+    listener:
+      type: single
+      ack-mode: manual
+    producer:
+      acks: all
+      transaction-id-prefix: worker-tx-
 
 server:
   port: 8081
@@ -26,8 +42,8 @@ kafka:
   bootstrap-servers: kafka:9092
   group-id: group_json
   trusted-packages: "*"
-  command-topic: Kafka_Task_json
-  report-topic: Kafka_Task_Report_json
+  command-topic: kafka-task-json
+  report-topic: kafka-task-report-json
 
 volume:
   path: /tmp/files/
