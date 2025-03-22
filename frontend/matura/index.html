@@ -73,6 +73,20 @@
 
 
     <script src="https://kit.fontawesome.com/0c76c97442.js" crossorigin="anonymous"></script>
+
+    <!-- Dynamiczne zmienne środowiskowe -->
+    <script src="/config.js"></script>
+    <script>
+        window.process = {
+            env: {
+                VITE_API_URL: window._env_?.VITE_API_URL || "https://matura-api.it4u.app/api",
+                VITE_PYLSP_URL: window._env_?.VITE_PYLSP_URL || "wss://lsp.it4u.app"
+            }
+        };
+        console.log("API URL:", window.process.env.VITE_API_URL);
+        console.log("LSP URL:", window.process.env.VITE_PYLSP_URL);
+    </script>
+
     <title>CheckIT</title>
 </head>
 <body>

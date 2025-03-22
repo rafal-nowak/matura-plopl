@@ -1,5 +1,5 @@
 ### login admin
-POST https://matura-api.it4u.app/api/v1/auth/login
+POST https://test.matura-api.it4u.app/api/v1/auth/login
 Accept: application/json
 Content-Type: application/json
 
@@ -65,7 +65,7 @@ Content-Type: application/json
 Authorization: {{auth_token}}
 
 ### get all users
-GET https://matura-api.it4u.app/api/v1/users
+GET https://test.matura-api.it4u.app/api/v1/users
 Accept: application/json
 Content-Type: application/json
 Authorization: {{auth_token}}

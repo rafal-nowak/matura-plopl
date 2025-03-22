@@ -10,7 +10,6 @@ on:
 
 jobs:
   deploy:
-    if: true
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -33,4 +32,5 @@ jobs:
           REPO=matura-react \
           TAG=${{ steps.build-number.outputs.BUILD_NUMBER }} \
           ../../.ci/build-publish.sh . \
-            --build-arg api_base_url=https://matura-api.it4u.app
+            --build-arg api_base_url=${{ secrets.VITE_API_URL }} \
+            --build-arg pylsp_url=${{ secrets.VITE_PYLSP_URL }}
