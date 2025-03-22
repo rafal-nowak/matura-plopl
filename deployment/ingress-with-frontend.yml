@@ -1,0 +1,67 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: counter-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/websocket-services: "lsp-service"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: test.counter-api.it4u.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: counter-service
+                port:
+                  number: 80
+    - host: test.matura-api.it4u.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: matura-service
+                port:
+                  number: 80
+    - host: test.lsp.it4u.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: lsp-service
+                port:
+                  number: 80
+    - host: test.matura-frontend.it4u.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: matura-frontend-service
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - test.counter-api.it4u.app
+      secretName: test-counter-api-it4u-app-tls
+    - hosts:
+        - test.matura-api.it4u.app
+      secretName: test-matura-api-it4u-app-tls
+    - hosts:
+        - test.lsp.it4u.app
+      secretName: test-lsp-it4u-app-tls
+    - hosts:
+        - test.matura-frontend.it4u.app
+      secretName: test-matura-frontend-it4u-app-tls

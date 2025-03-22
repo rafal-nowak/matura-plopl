@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matura-frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: matura-frontend
+  template:
+    metadata:
+      labels:
+        app: matura-frontend
+    spec:
+      containers:
+        - name: matura-frontend
+          image: rafalnowak444/matura-react:latest
+          ports:
+            - containerPort: 5173
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5173
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5173
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: matura-frontend-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 5173
+  selector:
+    app: matura-frontend
