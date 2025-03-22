@@ -1,19 +1,26 @@
-FROM node:19-alpine
+# Stage 1: Build
+FROM node:19-alpine AS builder
 ARG api_base_url
 ARG pylsp_url
 
 WORKDIR /app
-COPY package*.json .
-RUN npm i --silent
-COPY .. .
 
-# Tworzymy plik .env z przekazanymi zmiennymi środowiskowymi
+# Kopiowanie zależności i instalacja
+COPY package*.json ./
+RUN npm ci --silent
+
+# Kopiowanie reszty plików i budowanie aplikacji
+COPY .. .
 RUN echo "VITE_API_BASE_URL=${api_base_url}" > .env
 RUN echo "VITE_PYLSP_URL=${pylsp_url}" >> .env
-
-# Budowanie aplikacji
 RUN npm run build
 
-# Użycie serwera statycznego
-EXPOSE 5173
-CMD ["npm", "run", "dev"]
+# Stage 2: Serve
+FROM nginx:1.25-alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Konfiguracja NGINX
+COPY nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
