@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: matura-frontend
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: matura-frontend
@@ -16,17 +16,17 @@ spec:
         - name: matura-frontend
           image: rafalnowak444/matura-react:latest
           ports:
-            - containerPort: 5173
+            - containerPort: 8080
           readinessProbe:
             httpGet:
               path: /
-              port: 5173
+              port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
           livenessProbe:
             httpGet:
               path: /
-              port: 5173
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10
 ---
@@ -38,6 +38,6 @@ spec:
   type: ClusterIP
   ports:
     - port: 80
-      targetPort: 5173
+      targetPort: 8080
   selector:
     app: matura-frontend
