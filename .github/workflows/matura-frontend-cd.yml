@@ -33,4 +33,5 @@ jobs:
           REPO=matura-react \
           TAG=${{ steps.build-number.outputs.BUILD_NUMBER }} \
           ../../.ci/build-publish.sh . \
-            --build-arg api_base_url=https://matura-api.it4u.app
+            --build-arg vite_api_url=https://test.matura-api.it4u.app/api \
+            --build-arg vite_pylsp_url=wss://test.lsp.it4u.app
