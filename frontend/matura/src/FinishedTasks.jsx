@@ -14,7 +14,14 @@ import {
     HStack,
     Spinner,
     Text,
-    useToast, VStack
+    useToast,
+    VStack,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalCloseButton,
 } from "@chakra-ui/react";
 import {useEffect, useState} from "react";
 import {getTasks, Task, TaskPage} from "./services/taskService.js";
@@ -24,6 +31,8 @@ import {LanguageIcon} from "./components/LanguageIcon.jsx";
 import PropTypes from "prop-types";
 import {LoadingCard} from "./components/LoadingCard.jsx";
 import {motion} from 'framer-motion';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const MotionCard = motion(Card);
 
@@ -31,6 +40,8 @@ const TaskCard = ({task}) => {
     const [loading, setLoading] = useState(true);
     const [template, setTemplate] = useState({});
     const [assigningUsername, setAssigningUsername] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [codeData, setCodeData] = useState('');
 
     const navigate = useNavigate();
     const toast = useToast();
@@ -50,6 +61,30 @@ const TaskCard = ({task}) => {
             setLoading(false);
         });
     }, [task]);
+
+    const fetchCodeData = async () => {
+        const promise = task.getLastSubmissionSolution()
+
+        toast.promise(promise, {
+            success: {
+                status: "success",
+                message: "Kod pobrany. Wkrótce zobaczysz swoje rozwiązanie."
+            },
+            loading: {
+                status: "loading",
+                message: "Pobieranie kodu..."
+            },
+            error: {
+                status: "error",
+                message: "Wystąpił błąd przy pobieraniu zadania"
+            }
+        })
+
+        promise.then((val) => {
+            setCodeData(val);
+            setIsModalOpen(true);
+        })
+    };
 
     return (
         <MotionCard
@@ -85,12 +120,46 @@ const TaskCard = ({task}) => {
                                 <i className="fa-solid fa-rotate-left fa-fw"/>
                                 <Text marginLeft='5px'>Rozwiąż ponownie</Text>
                             </Button>
-                            {/*<Button colorScheme="teal" width='100%' onClick={() => navigate(`/solve?task=${task.id}`)}>*/}
-                            {/*    <i className="fa-solid fa-code fa-fw"/>*/}
-                            {/*    <Text marginLeft='5px'>Wyświetl kod</Text>*/}
-                            {/*</Button>*/}
+                            <Button colorScheme="teal" width='100%' onClick={fetchCodeData}>
+                                <i className="fa-solid fa-code fa-fw"/>
+                                <Text marginLeft='5px'>Wyświetl kod</Text>
+                            </Button>
                         </VStack>
                     </CardFooter>
+
+                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="xl">
+                        <ModalOverlay />
+                        <ModalContent borderRadius="lg" boxShadow="2xl">
+                            <ModalHeader fontWeight="bold" textAlign="center">
+                                Kod zadania
+                            </ModalHeader>
+                            <ModalCloseButton />
+                            <ModalBody
+                                maxHeight="500px"
+                                overflowY="auto"
+                                backgroundColor="#2d2d2d"
+                                borderRadius="md"
+                                padding="15px"
+                            >
+                                <SyntaxHighlighter
+                                    language={template.language?.toLowerCase() || 'python'}
+                                    style={dracula}
+                                    wrapLongLines
+                                    customStyle={{
+                                        borderRadius: '8px',
+                                        padding: '15px',
+                                        fontSize: '0.9rem',
+                                        lineHeight: '1.5',
+                                        whiteSpace: 'pre-wrap',
+                                        wordBreak: 'break-word',
+                                        maxWidth: '100%'
+                                    }}
+                                >
+                                    {codeData || 'Ładowanie danych...'}
+                                </SyntaxHighlighter>
+                            </ModalBody>
+                        </ModalContent>
+                    </Modal>
                 </>
             )}
         </MotionCard>

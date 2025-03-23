@@ -146,7 +146,7 @@ public class TaskController {
         );
     }
 
-    @PostMapping("{taskId}/submissions")
+    @GetMapping("{taskId}/submissions")
     public ResponseEntity<List<SubmissionDto>> getSubmissions(
             @PathVariable Integer taskId
     ) {
