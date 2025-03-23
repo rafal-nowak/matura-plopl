@@ -85,6 +85,26 @@ export const Navbar = () => {
 
                     </MenuList>
                 </Menu>
+
+                <Button size='lg' variant="link" color="white">
+                    <a
+                        href="https://docs.google.com/forms/d/e/1FAIpQLScPISDgyrNTrqPQW8ShD_cGJVLRnm_dJu6uyfGnuFkyvbQvSQ/viewform?usp=header"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            textDecoration: 'none',
+                            color: 'white',
+                            margin: '10px',
+                            fontSize: '18px'
+                        }}
+                    >
+                        <i className="fa-solid fa-file-pen" style={{marginRight: '5px'}}/>
+                        <Text marginX='5px'>Ankieta</Text>
+                    </a>
+                </Button>
+
             </Box>
 
             <Box display={{base: "block", md: "none"}}>
@@ -111,7 +131,26 @@ export const Navbar = () => {
                             <i className="fa-solid fa-fw fa-book-open"/><Text marginLeft='5px'>Zbiór zadań</Text>
                         </Button>
 
-                        {(user.role === "INSTRUCTOR" || user.role === "ADMIN" ) && (
+                        <Button variant="ghost" w='100%' color="white">
+                            <a
+                                href="https://docs.google.com/forms/d/e/1FAIpQLScPISDgyrNTrqPQW8ShD_cGJVLRnm_dJu6uyfGnuFkyvbQvSQ/viewform?usp=header"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    textDecoration: 'none',
+                                    color: 'white',
+                                    margin: '10px',
+                                    fontSize: '18px'
+                                }}
+                            >
+                                <i className="fa-solid fa-file-pen" style={{marginRight: '5px'}}/>
+                                <Text marginX='5px'>Ankieta</Text>
+                            </a>
+                        </Button>
+
+                        {(user.role === "INSTRUCTOR" || user.role === "ADMIN") && (
                             <>
                                 <Heading size='sm' marginTop='15px'>Przypisywanie zadań</Heading>
                                 <Button variant="ghost" w="100%">Zarządzaj</Button>
