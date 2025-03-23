@@ -72,7 +72,17 @@ Authorization: {{auth_token}}
 }
 
 ### execute task
-POST http://localhost:8080/api/v1/tasks/3/process
+POST http://localhost:8080/api/v1/tasks/1/process
+Accept: application/json
+Content-Type: application/json
+Authorization: {{auth_token}}
+
+{
+
+}
+
+### get submissions
+POST http://localhost:8080/api/v1/tasks/1/submissions
 Accept: application/json
 Content-Type: application/json
 Authorization: {{auth_token}}

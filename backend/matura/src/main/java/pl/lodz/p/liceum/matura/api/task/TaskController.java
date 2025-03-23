@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import pl.lodz.p.liceum.matura.api.response.MessageResponse;
 import pl.lodz.p.liceum.matura.api.submission.SubmissionDto;
 import pl.lodz.p.liceum.matura.api.submission.SubmissionDtoMapper;
+import pl.lodz.p.liceum.matura.appservices.SubmissionApplicationService;
 import pl.lodz.p.liceum.matura.appservices.TaskApplicationService;
 import pl.lodz.p.liceum.matura.domain.result.SubtaskResultService;
 import pl.lodz.p.liceum.matura.domain.submission.Submission;
@@ -27,8 +28,8 @@ public class TaskController {
 
     private final TaskApplicationService taskService;
     private final TaskDtoMapper taskMapper;
-    private final SubtaskResultService subtaskResultService;
     private final SubmissionDtoMapper submissionMapper;
+    private final SubmissionApplicationService submissionService;
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<TaskDto> getTask(@PathVariable Integer id) {
@@ -143,5 +144,15 @@ public class TaskController {
         return ResponseEntity.ok(
                 submissionMapper.toDto(submission)
         );
+    }
+
+    @PostMapping("{taskId}/submissions")
+    public ResponseEntity<List<SubmissionDto>> getSubmissions(
+            @PathVariable Integer taskId
+    ) {
+        var submissions = submissionService.findByTaskId(taskId).stream()
+                .map(submissionMapper::toDto)
+                .toList();
+        return ResponseEntity.ok(submissions);
     }
 }
