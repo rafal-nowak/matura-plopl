@@ -14,6 +14,7 @@ import pl.lodz.p.liceum.matura.domain.template.TemplateNotFoundException;
 
 import java.time.Clock;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -71,4 +72,8 @@ public class SubmissionApplicationService {
         return submissionService.findById(id);
     }
 
+
+    public List<Submission> findByTaskId(Integer taskId) {
+        return submissionService.findByTaskId(taskId);
+    }
 }

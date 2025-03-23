@@ -8,6 +8,7 @@ import pl.lodz.p.liceum.matura.domain.subtask.Subtask;
 import pl.lodz.p.liceum.matura.domain.submission.SubmissionAlreadyExistsException;
 import pl.lodz.p.liceum.matura.domain.submission.SubmissionRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -49,5 +50,13 @@ public class SubmissionStorageAdapter implements SubmissionRepository {
         return repository
                 .findById(id)
                 .map(mapper::toDomain);
+    }
+
+    @Override
+    public List<Submission> findByTaskId(final Integer taskId) {
+        return repository.findByTaskIdOrderBySubmittedAt(taskId)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 }
