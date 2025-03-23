@@ -30,6 +30,7 @@ public class TaskController {
     private final TaskDtoMapper taskMapper;
     private final SubtaskResultService subtaskResultService;
     private final SubmissionDtoMapper submissionMapper;
+    private final SubmissionApplicationService submissionService;
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<TaskDto> getTask(@PathVariable Integer id) {
