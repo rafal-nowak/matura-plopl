@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - staging
     paths:
       - frontend/matura/**
 
@@ -35,3 +35,27 @@ jobs:
           ../../.ci/build-publish.sh . \
             --build-arg vite_api_url=https://test.matura-api.it4u.app/api \
             --build-arg vite_pylsp_url=wss://test.lsp.it4u.app
+
+      # Wybór kubeconfig
+      - name: Select kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG_TEST_CONTENT }}" > $HOME/kubeconfig
+
+      # Konfiguracja kubeconfig
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          mv $HOME/kubeconfig $HOME/.kube/config
+
+      # Test połączenia z Kubernetesem
+      - name: Test connection to Kubernetes
+        run: kubectl get pods
+
+      # Zmiana obrazu w pliku deployment-matura-frontend.yaml
+      - name: Update deployment-matura-frontend.yaml with new image tag
+        run: |
+          sed -i 's@image: rafalnowak444/matura-react:.*@image: rafalnowak444/matura-react:${{ steps.build-number.outputs.BUILD_NUMBER }}@' ../../deployment/deployment-matura-frontend.yaml
+
+      # Wykonanie kubectl apply dla deployment-matura-frontend.yaml
+      - name: Apply Kubernetes Deployment
+        run: kubectl apply -f ../../deployment/deployment-matura-frontend.yaml
