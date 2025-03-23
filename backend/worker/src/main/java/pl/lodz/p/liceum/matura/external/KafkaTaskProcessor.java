@@ -41,8 +41,8 @@ public class KafkaTaskProcessor implements ConsumerAwareRebalanceListener {
     }
 
     private void processTask(ConsumerRecord<String, TaskEvent> record, Acknowledgment acknowledgment, Consumer<?, ?> consumer) {
+        TaskEvent taskEvent = record.value();
         try {
-            TaskEvent taskEvent = record.value();
             if (taskEvent instanceof TaskSentForProcessingEvent taskSentForProcessingEvent) {
                 log.info("Received TaskSentForProcessingEvent: " + taskEvent);
 
@@ -107,6 +107,41 @@ public class KafkaTaskProcessor implements ConsumerAwareRebalanceListener {
             }
         } catch (Exception e) {
             log.severe("❌ Error during task processing: " + record.value() + " - " + e.getMessage());
+
+            if (taskEvent instanceof TaskSentForProcessingEvent taskSentForProcessingEvent) {
+                for (int i = 1; i <= taskSentForProcessingEvent.getNumberOfSubtasks(); i++) {
+                    TestResult failure = new TestResult();
+                    failure.setVerdict(Verdict.SYSTEM_ERROR);
+
+                    kafkaTemplate.send(
+                            kafkaProperties.getReportTopic(),
+                            new SubtaskFullProcessingCompleteEvent(taskEvent.getTaskId(), taskSentForProcessingEvent.getSubmissionId(),
+                                    taskSentForProcessingEvent.getWorkspaceUrl(), i, List.of(failure))
+                    );
+                }
+
+                kafkaTemplate.send(
+                        kafkaProperties.getReportTopic(),
+                        new TaskProcessingCompleteEvent(taskSentForProcessingEvent.getTaskId(), taskSentForProcessingEvent.getSubmissionId(), taskSentForProcessingEvent.getWorkspaceUrl())
+                );
+
+            } else if (taskEvent instanceof SubtaskSentForFastProcessingEvent subtaskSentForFastProcessingEvent) {
+                TestResult failure = new TestResult();
+                failure.setVerdict(Verdict.SYSTEM_ERROR);
+                kafkaTemplate.send(
+                        kafkaProperties.getReportTopic(),
+                        new SubtaskFastProcessingCompleteEvent(taskEvent.getTaskId(), subtaskSentForFastProcessingEvent.getSubmissionId(),
+                                subtaskSentForFastProcessingEvent.getWorkspaceUrl(), subtaskSentForFastProcessingEvent.getNumber(), List.of(failure))
+                );
+            } else if (taskEvent instanceof SubtaskSentForFullProcessingEvent subtaskSentForFullProcessingEvent) {
+                TestResult failure = new TestResult();
+                failure.setVerdict(Verdict.SYSTEM_ERROR);
+                kafkaTemplate.send(
+                        kafkaProperties.getReportTopic(),
+                        new SubtaskFullProcessingCompleteEvent(taskEvent.getTaskId(), subtaskSentForFullProcessingEvent.getSubmissionId(),
+                                subtaskSentForFullProcessingEvent.getWorkspaceUrl(), subtaskSentForFullProcessingEvent.getNumber(), List.of(failure))
+                );
+            }
         }
     }
 
