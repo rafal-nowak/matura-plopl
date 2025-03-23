@@ -67,16 +67,15 @@ const TaskCard = ({task}) => {
 
         toast.promise(promise, {
             success: {
-                status: "success",
-                message: "Kod pobrany. Wkrótce zobaczysz swoje rozwiązanie."
+                title: "Pobrano kod",
+                description: "Wkrótce zobaczysz swoje rozwiązanie."
             },
             loading: {
-                status: "loading",
-                message: "Pobieranie kodu..."
+                title: "Pobieranie kodu w trakcie"
             },
             error: {
-                status: "error",
-                message: "Wystąpił błąd przy pobieraniu zadania"
+                title: "Wystąpił błąd",
+                description: "Coś poszło nie tak przy pobieraniu kodu. Spróbuj ponownie później!."
             }
         })
 
