@@ -135,7 +135,7 @@ public class TaskController {
         );
     }
 
-    @PostMapping("{taskId}/process")
+    @GetMapping("{taskId}/process")
     public ResponseEntity<SubmissionDto> executeTask(
             @PathVariable Integer taskId
     ) {
