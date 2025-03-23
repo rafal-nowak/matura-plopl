@@ -19,6 +19,14 @@ export class Task {
         return await Template.findById(this.templateId)
     }
 
+    async getLastSubmissionSolution() {
+        const endpoint = `${API}/tasks/${this.id}/submissions`
+
+        const submissions = (await axios.get(endpoint, User.fromLocalStorage().getAuthHeader())).data
+
+        return submissions[submissions.length - 1].sourceCode
+    }
+
     static async findById(id) {
         let endpoint = `${API}/tasks/${id}`
         let data = (await axios.get(endpoint, User.fromLocalStorage().getAuthHeader())).data
@@ -33,7 +41,6 @@ export class Task {
         )
     }
 
-    // TODO when backend is ready, check for existing tasks on the backend
     /**
      * Returns id of a task, if there exists one (one being assigned to a specific user with a given template)
      * @param templateId id of the template, which user wants to solve
