@@ -2,6 +2,8 @@ package pl.lodz.p.liceum.matura.domain.submission;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 public class SubmissionService {
     private final SubmissionRepository submissionRepository;
@@ -22,5 +24,9 @@ public class SubmissionService {
         return submissionRepository
                 .findById(id)
                 .orElseThrow(SubmissionNotFoundException::new);
+    }
+
+    public List<Submission> findByTaskId(Integer taskId) {
+        return submissionRepository.findByTaskId(taskId);
     }
 }
