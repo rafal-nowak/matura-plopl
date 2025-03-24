@@ -316,6 +316,9 @@ public class DockerTaskExecutor implements TaskExecutor {
                 }
                 results.add(testResult);
             }
+            var cleanupCommand = prepareCleanupCommand(subtask.getWorkspaceUrl());
+            getRuntime().exec(cleanupCommand);
+
             lock.releaseLock();
 
             return results;
@@ -338,5 +341,13 @@ public class DockerTaskExecutor implements TaskExecutor {
         else
             return new String[]{"sh", "-c", "cd " + workspaceUrl + "; docker compose up"};
 //            return new String[]{"sh", "-c", dockerHost + "cd " + workspaceUrl + " && docker-compose up"};
+    }
+
+    private String[] prepareCleanupCommand(String workspaceUrl) {
+        boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
+        if (isWindows)
+            return new String[]{"powershell.exe", "/c", "docker-compose --file \"" + workspaceUrl + "\\docker-compose.yml\" rm -fsv"};
+        else
+            return new String[]{"sh", "-c", "cd " + workspaceUrl + "; docker compose rm -fsv"};
     }
 }
