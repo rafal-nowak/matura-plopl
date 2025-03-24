@@ -20,6 +20,7 @@ import pl.lodz.p.liceum.matura.external.worker.task.events.TaskEvent;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @EnableKafka
 @Configuration
@@ -65,7 +66,7 @@ public class KafkaConfiguration {
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
         var producerFactory = new DefaultKafkaProducerFactory<String, TaskEvent>(config);
-        producerFactory.setTransactionIdPrefix("worker-tx-"); // If you know how to do this properly then feel free to do so
+        producerFactory.setTransactionIdPrefix("worker-tx-" + UUID.randomUUID()); // If you know how to do this properly then feel free to do so
 
         return producerFactory;
     }
@@ -75,6 +76,4 @@ public class KafkaConfiguration {
     public KafkaTemplate<String, TaskEvent> taskKafkaTemplate(KafkaProperties kafkaProperties) {
         return new KafkaTemplate<>(taskProducerFactory(kafkaProperties));
     }
-
-
 }
