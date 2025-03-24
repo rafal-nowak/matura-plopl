@@ -15,7 +15,6 @@ import pl.lodz.p.liceum.matura.config.KafkaProperties;
 import pl.lodz.p.liceum.matura.domain.*;
 import pl.lodz.p.liceum.matura.external.worker.task.events.*;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
