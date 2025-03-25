@@ -317,7 +317,7 @@ public class DockerTaskExecutor implements TaskExecutor {
                 results.add(testResult);
             }
             var cleanupCommand = prepareCleanupCommand(subtask.getWorkspaceUrl());
-            getRuntime().exec(cleanupCommand);
+            getRuntime().exec(cleanupCommand).waitFor();
 
             lock.releaseLock();
 
