@@ -52,8 +52,8 @@ services:
       SPRING_PROFILES_ACTIVE: dev
     volumes:
       - ./tmp/files:/tmp/files
-    ports:
-      - "8080:8080"
+    # ports:
+    #   - "8080:8080"
     networks:
       - matura-network
     depends_on:
@@ -69,8 +69,8 @@ services:
       SPRING_PROFILES_ACTIVE: dev
     volumes:
       - ./tmp/files:/tmp/files
-    ports:
-      - "8081:8081"
+    # ports:
+    #   - "8081:8081"
     networks:
       - matura-network
     depends_on:
@@ -81,7 +81,7 @@ services:
     container_name: matura-react
     image: rafalnowak444/matura-react
     environment:
-      VITE_API_URL: http://localhost:8080/api
+      VITE_API_URL: matura-api/api
       VITE_PYLSP_URL: lsp-server:9001
       VITE_HOST: 0.0.0.0
     ports:
