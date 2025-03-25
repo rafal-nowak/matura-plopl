@@ -38,7 +38,7 @@ services:
     environment:
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_CREATE_TOPICS: "Kafka_Task_json:3:1,Kafka_Task_Report_json:3:1"
+      KAFKA_CREATE_TOPICS: "kafka-task-json:3:1,kafka-task-report-json:3:1"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     networks:
       - matura-network
@@ -82,25 +82,23 @@ services:
     image: rafalnowak444/matura-react
     environment:
       VITE_API_URL: http://localhost:8080/api
+      VITE_PYLSP_URL: lsp-server:9001
       VITE_HOST: 0.0.0.0
     ports:
-      - "5173:5173"
+      - "8085:8080"
     networks:
       - matura-network
     depends_on:
       - matura-api
     restart: unless-stopped
 
-#  docker-dind:
-#    container_name: docker-dind
-#    image: docker:24.0.5-dind
-#    privileged: true  # Dodaj tę linię
-#    command: tail -f /dev/null
-#    volumes:
-#      - ./tmp/files:/tmp/files
-#    networks:
-#      - matura-network
-#    restart: unless-stopped
+  lsp-server:
+    container_name: lsp-server
+    image: rafalnowak444/lsp-server
+    restart: unless-stopped
+    networks:
+      - matura-network
+
 
 volumes:
   postgresql:
