@@ -21,6 +21,7 @@ public class DockerComposeGenerator {
                 services:
                   env:
                     image: python:3.8-bookworm
+                    network_mode: "none"
                     command: [ "sh", "-c", '
                         cd code/src;
                         chmod +x ../sio2jail;
